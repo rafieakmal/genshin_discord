@@ -16,7 +16,7 @@ from database.database import Database
 # Loading things from config
 import config
 
-client_db = Database(config.mongo)
+client_db = Database()
 print(f"Connected to the database")
 
         
