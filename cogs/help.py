@@ -37,7 +37,7 @@ class help(commands.Cog):
                     embedVar.add_field(name="General Commands",
                                         value="```/reqabyssmaster - To request role Abyss Master```\n", 
                                             inline=False)
-                    embedVar.set_footer(text="Version: 1.0.0")
+                    embedVar.set_footer(text="Version: 1.0.1")
                     embedVar.set_image(
                         url="https://i.pinimg.com/564x/2e/57/b4/2e57b4a27aa406a68bc36ee5b14a4ee6.jpg"
                     )
@@ -55,7 +55,7 @@ class help(commands.Cog):
                     embedVar.add_field(name="General Commands",
                                         value="```/reqabyssmaster - To request role Abyss Master```\n", 
                                             inline=False)
-                    embedVar.set_footer(text="Version: 1.0.0")
+                    embedVar.set_footer(text="Version: 1.0.1")
                     embedVar.set_image(
                         url="https://i.pinimg.com/564x/2e/57/b4/2e57b4a27aa406a68bc36ee5b14a4ee6.jpg"
                     )

@@ -163,7 +163,7 @@ class general(commands.Cog):
                                         #     description=f"Requesting Abyss Master role for user with id: {uid}",
                                         #     colour=config.Success())
                                         # embedVar.add_field(name="User Info", value=message, inline=False)
-                                        # embedVar.set_footer(text="Version: 1.0.0")
+                                        # embedVar.set_footer(text="Version: 1.0.1")
                                         # embedVar.set_image(
                                         #     url=config.banner_success
                                         # )
@@ -186,7 +186,7 @@ class general(commands.Cog):
                                             description=f"Requesting Abyss Master role for user with id: {uid}",
                                             colour=config.Error())
                                     embedVar.add_field(name="User Info", value=message, inline=False)
-                                    embedVar.set_footer(text="Version: 1.0.0")
+                                    embedVar.set_footer(text="Version: 1.0.1")
                                     embedVar.set_image(
                                         url=config.banner_error
                                     )
@@ -196,7 +196,7 @@ class general(commands.Cog):
                                         description=f"Requesting Abyss Master role for user: {uid}",
                                         colour=config.Success())
                                     embedVar.add_field(name="User Info", value=message, inline=False)
-                                    embedVar.set_footer(text="Version: 1.0.0")
+                                    embedVar.set_footer(text="Version: 1.0.1")
                                     embedVar.set_image(
                                         url=config.banner_success
                                     )
@@ -348,7 +348,7 @@ class general(commands.Cog):
                                         description=f"Requesting Abyss Master role for user with id: {uid}",
                                         colour=config.Error())
                                 embedVar.add_field(name="User Info", value=message, inline=False)
-                                embedVar.set_footer(text="Version: 1.0.0")
+                                embedVar.set_footer(text="Version: 1.0.1")
                                 embedVar.set_image(
                                     url=config.banner_error
                                 )
@@ -358,7 +358,7 @@ class general(commands.Cog):
                                     description=f"Requesting Abyss Master role for user: {uid}",
                                     colour=config.Success())
                                 embedVar.add_field(name="User Info", value=message, inline=False)
-                                embedVar.set_footer(text="Version: 1.0.0")
+                                embedVar.set_footer(text="Version: 1.0.1")
                                 embedVar.set_image(
                                     url=config.banner_success
                                 )
