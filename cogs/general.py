@@ -163,7 +163,7 @@ class general(commands.Cog):
                                         #     description=f"Requesting Abyss Master role for user with id: {uid}",
                                         #     colour=config.Success())
                                         # embedVar.add_field(name="User Info", value=message, inline=False)
-                                        # embedVar.set_footer(text="Version: 1.0.0")
+                                        # embedVar.set_footer(text="Version: 1.0.1")
                                         # embedVar.set_image(
                                         #     url=config.banner_success
                                         # )
@@ -186,7 +186,7 @@ class general(commands.Cog):
                                             description=f"Requesting Abyss Master role for user with id: {uid}",
                                             colour=config.Error())
                                     embedVar.add_field(name="User Info", value=message, inline=False)
-                                    embedVar.set_footer(text="Version: 1.0.0")
+                                    embedVar.set_footer(text="Version: 1.0.1")
                                     embedVar.set_image(
                                         url=config.banner_error
                                     )
@@ -196,7 +196,7 @@ class general(commands.Cog):
                                         description=f"Requesting Abyss Master role for user: {uid}",
                                         colour=config.Success())
                                     embedVar.add_field(name="User Info", value=message, inline=False)
-                                    embedVar.set_footer(text="Version: 1.0.0")
+                                    embedVar.set_footer(text="Version: 1.0.1")
                                     embedVar.set_image(
                                         url=config.banner_success
                                     )
@@ -288,24 +288,22 @@ class general(commands.Cog):
                                 
                             message = "Fetched from Enka Network and Hoyolab"
                             message += f"\n\n**User:** ```{player['nickname'] if player['nickname'] else 'None'}```"
-                            message += f"\n**Adventure Rank:** ```{player['level'] if player['level'] else 'None'}```"
                             message += f"\n**Signature:** ```{player['signature'] if player['signature'] else 'None'}```"
                             message += f"\n**World Level:** ```{player['worldLevel'] if player['worldLevel'] else 'None'}```"
-                            message += f"\n**Achievements:** ```{player['finishAchievementNum'] if player['finishAchievementNum'] else 'None'}```"
-                            message += f"\n**Floor:** ```{player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}```"
-                            message += f"\n**Chamber:** ```{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}```"
-                            message += f"\n**Total Stars:** ```{total_stars}```"
-                            message += f"\n**Total Battles:** ```{total_battles}```"
-                            message += f"\n**Total Wins:** ```{total_wins}```"
+                            message += f"\n**Abyss Progress:** ```{player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}```"
+                            message += f"\n**Abyss Stars Collected:** ```{total_stars} Stars```"
+                            message += f"\n**Battles Fought:** ```{total_battles}/{total_wins}```"
+                            message += f"\n**Total Retries:** ```{int(total_battles) - int(total_wins)}```"
 
                             author = inter.author
                                 
                             # check if floor isn't 12 and chamber isn't 3
                             if int(player['towerFloorIndex']) != 12 or int(player['towerLevelIndex']) != 3:
                                 print('User is not on Floor 12, Chamber 3')
-                                message += f"\n\n**Requesting Abyss Master role for UID: {uid}**"
-                                message += "\n**Note:** User is not on Floor 12, Chamber 3"
-                                message += "\n**Conclusion:** User is not eligible for Abyss Master role"
+                                message += "\n\n**I'm unable to grant you the Abyss Master role at the moment.**"
+                                message += "\n**You are not on Floor 12, Chamber 3.**"
+                                message += "\n**Please try again when you reach Floor 12, Chamber 3.**"
+                                message += "\n**Thank you and good luck!**"
 
                                     
                                 print(f"Total Stars: {total_stars}")
@@ -336,8 +334,11 @@ class general(commands.Cog):
                                         is_error = False
                                 else:
                                     print('User has less than 9 stars')
-                                    message += "\n\n**You have not achieved 36 stars in Spiral Abyss!**"
+                                    message += "\n\n**I'm unable to grant you the Abyss Master role at the moment.**"
+                                    message += "\n**You have not achieved 36 stars in Spiral Abyss!**"
                                     message += "\n**You are not eligible for Abyss Master role!**"
+                                    message += "\n**Please try again when you reach 36 stars.**"
+                                    message += "\n**Thank you and good luck!**"
 
                                     is_error = True
                             
@@ -347,7 +348,7 @@ class general(commands.Cog):
                                         description=f"Requesting Abyss Master role for user with id: {uid}",
                                         colour=config.Error())
                                 embedVar.add_field(name="User Info", value=message, inline=False)
-                                embedVar.set_footer(text="Version: 1.0.0")
+                                embedVar.set_footer(text="Version: 1.0.1")
                                 embedVar.set_image(
                                     url=config.banner_error
                                 )
@@ -357,7 +358,7 @@ class general(commands.Cog):
                                     description=f"Requesting Abyss Master role for user: {uid}",
                                     colour=config.Success())
                                 embedVar.add_field(name="User Info", value=message, inline=False)
-                                embedVar.set_footer(text="Version: 1.0.0")
+                                embedVar.set_footer(text="Version: 1.0.1")
                                 embedVar.set_image(
                                     url=config.banner_success
                                 )

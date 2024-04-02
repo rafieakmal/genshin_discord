@@ -23,7 +23,7 @@ class task(commands.Cog):
         # if the unix time is 03:00:00
         if current_time == '03:00:00':
             # get the genshin impact client
-            client = genshin.Client()
+            client = genshin.Client(game=genshin.Game.GENSHIN)
             cookies = client.login_with_password(email=config.email, password=config.password)
 
             try:
@@ -43,25 +43,25 @@ class task(commands.Cog):
                     print(f'Error sending message: {e}')
                     pass
             
-        try:
-            if self.index == 0:
-                message = await self.bot.get_user(212534595445456897).send(f"Current Time: {current_time}")
-                self.message_id = message.id
-                self.index += 1
+        # try:
+        #     if self.index == 0:
+        #         message = await self.bot.get_user(212534595445456897).send(f"Current Time: {current_time}")
+        #         self.message_id = message.id
+        #         self.index += 1
             
-            if self.message_id is not None:
-                # else edit the message
-                user = self.bot.get_user(212534595445456897)
-                message = await user.fetch_message(self.message_id)
+        #     if self.message_id is not None:
+        #         # else edit the message
+        #         user = self.bot.get_user(212534595445456897)
+        #         message = await user.fetch_message(self.message_id)
                 
-                try:
-                    await message.edit(content=f"Current Time: {current_time}")
-                except Exception as e:
-                    print(f'Error editing message: {e}')
-                    pass
-        except Exception as e:
-            print(f'Error sending message: {e}')
-            pass
+        #         try:
+        #             await message.edit(content=f"Current Time: {current_time}")
+        #         except Exception as e:
+        #             print(f'Error editing message: {e}')
+        #             pass
+        # except Exception as e:
+        #     print(f'Error sending message: {e}')
+        #     pass
 
 
     @claim_rewards.before_loop
