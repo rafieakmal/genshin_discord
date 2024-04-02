@@ -1,7 +1,9 @@
 import pymongo, certifi
+import config
 
 class Database:
-    def __init__(self, connection_string):
+    def __init__(self):
+        connection_string = config.mongo
         self.client = pymongo.MongoClient(connection_string, tlsCAFile=certifi.where())
         self.db = self.client['genshinindo']
 

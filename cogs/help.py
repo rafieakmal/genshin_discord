@@ -5,7 +5,7 @@ import config
 from helpers import errors
 from database.database import Database
 
-client_db = Database(config.mongo)
+client_db = Database()
 print("Connected to the database")
 
 class help(commands.Cog):

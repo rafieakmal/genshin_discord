@@ -13,7 +13,7 @@ from database.database import Database
 import asyncio
 
 # Connecting to the database
-client_db = Database(config.mongo)
+client_db = Database()
 print("Connected to the database")
 
 class general(commands.Cog):
