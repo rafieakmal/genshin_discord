@@ -1,0 +1,8 @@
+disnake
+aiohttp
+Pillow
+PyNaCl
+psutil
+requests
+genshin
+genshin[cookies,rsa]
