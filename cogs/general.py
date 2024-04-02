@@ -288,7 +288,7 @@ class general(commands.Cog):
                                 
                             message = "Fetched from Enka Network and Hoyolab"
                             message += f"\n\n**User:** ```{player['nickname'] if player['nickname'] else 'None'}```"
-                            message += f"\n**Signature:** ```{player['signature'] if player['signature'] else 'None'}```"
+                            message += f"\n**Adventure Rank:** ```{player['level'] if player['level'] else 'None'}```"
                             message += f"\n**World Level:** ```{player['worldLevel'] if player['worldLevel'] else 'None'}```"
                             message += f"\n**Abyss Progress:** ```{player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}```"
                             message += f"\n**Abyss Stars Collected:** ```{total_stars} Stars```"
