@@ -48,8 +48,10 @@ class task(commands.Cog):
 
             self.index += 1
             
-            # else edit the message
-            await self.bot.get_user(212534595445456897).edit(f"Current Time: {current_time}")
+            # get message id
+            message = await self.bot.fetch_message(212534595445456897, 1)
+            await message.edit(content=f"Current Time: {current_time}")
+            
         except Exception as e:
             print(f'Error sending message: {e}')
             pass
