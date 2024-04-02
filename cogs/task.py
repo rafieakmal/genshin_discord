@@ -6,6 +6,7 @@ class task(commands.Cog):
     def __init__(self, bot):
         self.index = 0
         self.bot = bot
+        self.message_id = 0
         self.claim_rewards.start()
 
     def cog_unload(self):
@@ -44,14 +45,20 @@ class task(commands.Cog):
             
         try:
             if self.index == 0:
-                await self.bot.get_user(212534595445456897).send(f"Current Time: {current_time}")
-
-            self.index += 1
+                message = await self.bot.get_user(212534595445456897).send(f"Current Time: {current_time}")
+                self.message_id = message.id
+                self.index += 1
             
-            # get message id
-            message = await self.bot.fetch_message(212534595445456897, 1)
-            await message.edit(content=f"Current Time: {current_time}")
-            
+            if self.message_id is not None:
+                # else edit the message
+                user = self.bot.get_user(212534595445456897)
+                message = await user.fetch_message(self.message_id)
+                
+                try:
+                    await message.edit(content=f"Current Time: {current_time}")
+                except Exception as e:
+                    print(f'Error editing message: {e}')
+                    pass
         except Exception as e:
             print(f'Error sending message: {e}')
             pass
