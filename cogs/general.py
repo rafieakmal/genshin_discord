@@ -234,7 +234,9 @@ class general(commands.Cog):
                     print('User has already claimed Abyss Master role')
                     return await inter.response.send_message("This user has already claimed the Abyss Master role")
                 
-                await inter.response.send_message("Loading...", ephemeral=True)
+                last_message = await inter.response.send_message("Please sit tight while I fetch your info")
+                last_message_id = await inter.original_response()
+                print(last_message_id)
 
                 # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OBokZGYxODE1ZjEtOTYwMi00NDU4LWE2NzctZDU5NjJjOTNiODVhIOijqbAGKNPj5_4EMPzcwT9CC2Jic19vdmVyc2Vh"}
                 # client = genshin.Client()
@@ -360,12 +362,11 @@ class general(commands.Cog):
                                     url=config.banner_success
                                 )
 
-                            # await inter.response.defer()
-                            await asyncio.sleep(2)
-                            await inter.followup.send(embed=embedVar)
+                            # edit the message from the last message id
+                            await last_message_id.edit(embed=embedVar)
                         
                         else:
-                            return await inter.followup.send("Unable to fetch user info")
+                            await last_message_id.edit_original_response(content="Unable to fetch user info")
         except Exception as e:
             print(f'Error sending userinfo message: {e}')
             await inter.response.send_message(embed=errors.create_error_embed(f"{e}"))
