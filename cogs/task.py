@@ -29,13 +29,27 @@ class task(commands.Cog):
                 reward = await client.claim_daily_reward()
             except genshin.AlreadyClaimed:
                 # send a message to the user
-                await self.bot.get_user(212534595445456897).send("Already claimed the daily reward")
+                try:
+                    await self.bot.get_user(212534595445456897).send(f"Daily reward already claimed")
+                except Exception as e:
+                    print(f'Error sending message: {e}')
+                    pass
             else:
                 # send a message to the user
-                await self.bot.get_user(212534595445456897).send(f"Claimed the daily reward, Claimed {reward.amount}x {reward.name}")
+                try:
+                    await self.bot.get_user(212534595445456897).send(f"Claimed the daily reward, Claimed {reward.amount}x {reward.name}")
+                except Exception as e:
+                    print(f'Error sending message: {e}')
+                    pass
             
         try:
-            await self.bot.get_user(212534595445456897).send(f"Current Time: {current_time}")
+            if self.index == 0:
+                await self.bot.get_user(212534595445456897).send(f"Current Time: {current_time}")
+
+            self.index += 1
+            
+            # else edit the message
+            await self.bot.get_user(212534595445456897).edit(f"Current Time: {current_time}")
         except Exception as e:
             print(f'Error sending message: {e}')
             pass
