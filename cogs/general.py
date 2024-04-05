@@ -86,9 +86,9 @@ class general(commands.Cog):
             else:
                 all_data_are_not_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
 
-                message_100 += "Explorations that are not 100% completed:"
+                message_100 += "> Explorations that are not 100% completed:"
                 for exploration in all_data_are_not_100:
-                    message_100 += f"\n- {exploration}"
+                    message_100 += f"\n> - {exploration}"
                 
                 message_data_100 = "> Explorations that are 100% completed:"
                 data_that_are_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] == 100]
