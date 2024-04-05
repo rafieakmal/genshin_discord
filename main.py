@@ -11,6 +11,7 @@ import sys
 from helpers import errors
 import aiohttp
 import genshin
+import datetime
 from database.database import Database
 
 # Loading things from config
@@ -381,168 +382,7 @@ async def menu(ctx):
 
 @bot.command()
 async def reqabyssmaster(ctx, uid):
-    try:
-        restricted = client_db.find_one('restrictmode', {'server_id': ctx.guild.id})
-        if restricted and restricted['status'] == 'on':
-            # check channel is whitelisted
-            whitelist = client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
-            if not whitelist:
-                return
-            
-            # get the user info from genshin api
-            if uid == None or uid == "":
-                return await ctx.send("Please provide a user id")
-                
-            # check uid length must be between 9 and 10
-            if len(uid) < 9 or len(uid) > 10:
-                return await ctx.send("Please provide a valid user id")
-                
-            # check if uid is a number
-            if not uid.isdigit():
-                return await ctx.send("Please provide a valid user id")
-            
-            # check if uid registered in the database
-            user = client_db.find_one('users_claimed', {'server_id': ctx.guild.id, 'uid': uid})
-            if user:
-                return await ctx.send("This user has already claimed the Abyss Master role")
-                
-            # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OBokZGYxODE1ZjEtOTYwMi00NDU4LWE2NzctZDU5NjJjOTNiODVhIOijqbAGKNPj5_4EMPzcwT9CC2Jic19vdmVyc2Vh"}
-            client = genshin.Client()
-            cookies = await client.login_with_password(config.email, config.password)
-            print(cookies)
-                
-            data_abyss = await client.get_spiral_abyss(uid, previous=False)
-
-            print(data_abyss)
-
-                # request to https://enka.network/api/uid/
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f"https://enka.network/api/uid/{uid}") as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        player = data['playerInfo']
-
-                        if player == None:
-                            return await ctx.send(f"Unable to fetch user info")
-                            
-                        if 'nickname' not in player:
-                            player['nickname'] = 'None'
-                            
-                        if 'level' not in player:
-                            player['level'] = 'None'
-                            
-                        if 'signature' not in player:
-                            player['signature'] = 'None'
-                            
-                        if 'worldLevel' not in player:
-                            player['worldLevel'] = 'None'
-                            
-                        if 'finishAchievementNum' not in player:
-                            player['finishAchievementNum'] = 'None'
-                            
-                        if 'towerFloorIndex' not in player:
-                            player['towerFloorIndex'] = 'None'
-                            
-                        if 'towerLevelIndex' not in player:
-                            player['towerLevelIndex'] = 'None'
-                            
-                        total_stars = data_abyss.total_stars
-
-                        total_battles = data_abyss.total_battles
-
-                        total_wins = data_abyss.total_wins
-                            
-                        message = "Fetched from Enka Network and Hoyolab"
-                        message += f"\n\n**User:** ```{player['nickname'] if player['nickname'] else 'None'}```"
-                        message += f"\n**Signature:** ```{player['signature'] if player['signature'] else 'None'}```"
-                        message += f"\n**World Level:** ```{player['worldLevel'] if player['worldLevel'] else 'None'}```"
-                        message += f"\n**Abyss Progress:** ```{player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}```"
-                        message += f"\n**Abyss Stars Collected:** ```{total_stars} Stars```"
-                        message += f"\n**Battles Fought:** ```{total_battles}/{total_wins}```"
-                        message += f"\n**Total Retries:** ```{int(total_battles) - int(total_wins)}```"
-
-                        author = ctx.author
-                            
-                        # check if floor isn't 12 and chamber isn't 3
-                        if int(player['towerFloorIndex']) != 12 or int(player['towerLevelIndex']) != 3:
-                            print('User is not on Floor 12, Chamber 3')
-                            message += "\n\n**I'm unable to grant you the Abyss Master role at the moment.**"
-                            message += "\n**You are not on Floor 12, Chamber 3.**"
-                            message += "\n**Please try again when you reach Floor 12, Chamber 3.**"
-                            message += "\n**Thank you and good luck!**"
-
-                                
-                            print(f"Total Stars: {total_stars}")
-
-                            embedVar = disnake.Embed(
-                                    title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                    description=f"Requesting Abyss Master role for user with id: {uid}",
-                                    colour=config.Error())
-                            embedVar.add_field(name="User Info", value=message, inline=False)
-                            embedVar.set_footer(text="Version: 1.0.1")
-                            embedVar.set_image(
-                                url=config.banner_error
-                            )
-
-                            return await ctx.send(embed=embedVar)
-                        else:
-                            print('User is on Floor 12, Chamber 3')
-                            print(f"Total Stars: {total_stars}")
-                            if int(total_stars) == 36:
-                                print('User has 9 stars')
-                                message += "\n\n**Congratulations!**"
-                                message += "\n**You have achieved 36 stars in Spiral Abyss!**"
-                                message += "\n**You are eligible for Abyss Master role!**"
-
-                                    # give user the Abyss Master role
-                                role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
-                                print(role)
-                                if role:
-                                    try:
-                                        member = await ctx.guild.fetch_member(author.id)
-                                        await member.add_roles(role)
-                                    except Exception as e:
-                                        print(f'Error adding role to member: {e}')
-                                        
-
-                                    embedVar = disnake.Embed(
-                                        title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                        description=f"Requesting Abyss Master role for user with id: {uid}",
-                                        colour=config.Success())
-                                    embedVar.add_field(name="User Info", value=message, inline=False)
-                                    embedVar.set_footer(text="Version: 1.0.1")
-                                    embedVar.set_image(
-                                        url=config.banner_success
-                                    )
-
-                                    # add the user to the database
-                                    client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': ctx.guild.id})
-
-                                    return await ctx.send(embed=embedVar)
-                            else:
-                                print('User has less than 9 stars')
-                                message += "\n\n**I'm unable to grant you the Abyss Master role at the moment.**"
-                                message += "\n**You have not achieved 36 stars in Spiral Abyss!**"
-                                message += "\n**You are not eligible for Abyss Master role!**"
-                                message += "\n**Please try again when you reach 36 stars.**"
-                                message += "\n**Thank you and good luck!**"
-
-                                embedVar = disnake.Embed(
-                                    title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                    description=f"Requesting Abyss Master role for user with id: {uid}",
-                                    colour=config.Error())
-                                embedVar.add_field(name="User Info", value=message, inline=False)
-                                embedVar.set_footer(text="Version: 1.0.1")
-                                embedVar.set_image(
-                                    url=config.banner_error
-                                )
-
-                                return await ctx.send(embed=embedVar)
-                    
-                    else:
-                        return await ctx.send("Unable to fetch user info")
-                    
-        else:
+        try:
             # check channel is whitelisted
             whitelist = client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
             if not whitelist:
@@ -568,12 +408,10 @@ async def reqabyssmaster(ctx, uid):
             cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
             client = genshin.Client(cookies)
             # cookies = await client.login_with_password(config.email, config.password)
-            print(cookies)
             # {'cookie_token_v2': 'v2_CAQSDGM5b3FhcTNzM2d1OCD9062wBiiAhbKEBDD83ME_QgtiYnNfb3ZlcnNlYQ', 'account_mid_v2': '1izyx9ekyj_hy', 'account_id_v2': '133197436', 'ltoken_v2': 'v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ', 'ltmid_v2': '1izyx9ekyj_hy', 'ltuid_v2': '133197436'}
                 
             data_abyss = await client.get_spiral_abyss(uid, previous=False)
 
-            print(data_abyss)
 
                 # request to https://enka.network/api/uid/
             async with aiohttp.ClientSession() as session:
@@ -613,32 +451,32 @@ async def reqabyssmaster(ctx, uid):
                         total_wins = data_abyss.total_wins
                             
                         message = "Fetched from Enka Network and Hoyolab"
-                        message += f"\n\n**User:** ```{player['nickname'] if player['nickname'] else 'None'}```"
-                        message += f"\n**Adventure Rank:** ```{player['level'] if player['level'] else 'None'}```"
-                        message += f"\n**World Level:** ```{player['worldLevel'] if player['worldLevel'] else 'None'}```"
-                        message += f"\n**Abyss Progress:** ```{player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}```"
-                        message += f"\n**Abyss Stars Collected:** ```{total_stars} Stars```"
-                        message += f"\n**Battles Fought:** ```{total_battles}/{total_wins}```"
-                        message += f"\n**Total Retries:** ```{int(total_battles) - int(total_wins)}```"
+                        message += f"\n\n**User:** {player['nickname'] if player['nickname'] else 'None'}"
+                        message += f"\n**Adventure Rank:** {player['level'] if player['level'] else 'None'}"
+                        message += f"\n**World Level:** {player['worldLevel'] if player['worldLevel'] else 'None'}"
+                        message += f"\n**Abyss Progress:** {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}"
+                        message += f"\n**Abyss Stars Collected:** {total_stars} <:abyss_stars:1225579783660765195>"
+                        message += f"\n**Battles Fought:** {total_battles}/{total_wins}"
+                        message += f"\n**Total Retries:** {int(total_battles) - int(total_wins)}"
 
                         author = ctx.author
                             
                         # check if floor isn't 12 and chamber isn't 3
                         if int(player['towerFloorIndex']) != 12 or int(player['towerLevelIndex']) != 3:
-                            print('User is not on Floor 12, Chamber 3')
-                            message += f"\n\n**Requesting Abyss Master role for UID: {uid}**"
-                            message += "\n**Note:** User is not on Floor 12, Chamber 3"
-                            message += "\n**Conclusion:** User is not eligible for Abyss Master role"
+                            message += "\n\nSorry, I'm unable to grant you the Abyss Master role at the moment :("
+                            message += "\nYou are not on Floor 12, Chamber 3."
+                            message += "\nPlease try again when you reach Floor 12, Chamber 3."
+                            message += "\nThank you and good luck!"
 
                                 
                             print(f"Total Stars: {total_stars}")
 
                             embedVar = disnake.Embed(
                                     title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                    description=f"Requesting Abyss Master role for user with id: {uid}",
-                                    colour=config.Success())
-                            embedVar.add_field(name="User Info", value=message, inline=False)
-                            embedVar.set_footer(text="Version: 1.0.1")
+                                    colour=config.Error(),
+                                    timestamp=datetime.datetime.now())
+                            embedVar.add_field(name="Abyss Statistics", value=message, inline=True)
+                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
                             embedVar.set_image(
                                 url=config.banner_error
                             )
@@ -648,10 +486,9 @@ async def reqabyssmaster(ctx, uid):
                             print('User is on Floor 12, Chamber 3')
                             print(f"Total Stars: {total_stars}")
                             if int(total_stars) == 36:
-                                print('User has 9 stars')
-                                message += "\n\n**Congratulations!**"
-                                message += "\n**You have achieved 36 stars in Spiral Abyss!**"
-                                message += "\n**You are eligible for Abyss Master role!**"
+                                message += "\n\nCongratulations!"
+                                message += "\nYou have achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
+                                message += "\nYou are eligible for Abyss Master role!"
 
                                     # give user the Abyss Master role
                                 role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
@@ -668,26 +505,28 @@ async def reqabyssmaster(ctx, uid):
 
                                     embedVar = disnake.Embed(
                                         title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                        description=f"Requesting Abyss Master role for user with id: {uid}",
-                                        colour=config.Success())
-                                    embedVar.add_field(name="User Info", value=message, inline=False)
-                                    embedVar.set_footer(text="Version: 1.0.1")
+                                        colour=config.Success(),
+                                        timestamp=datetime.datetime.now())
+                                    embedVar.add_field(name="Abyss Statistics", value=message, inline=True)
+                                    embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
                                     embedVar.set_image(
                                         url=config.banner_success
                                     )
 
                                     return await ctx.send(embed=embedVar)
                             else:
-                                print('User has less than 9 stars')
-                                message += "\n\n**You have not achieved 36 stars in Spiral Abyss!**"
-                                message += "\n**You are not eligible for Abyss Master role!**"
+                                message += "\n\nSorry, I'm unable to grant you the Abyss Master role at the moment :("
+                                message += "\nYou have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
+                                message += "\nYou are not eligible for Abyss Master role!"
+                                message += "\nPlease try again when you reach 36 <:abyss_stars:1225579783660765195>!"
+                                message += "\nThank you and good luck!"
 
                                 embedVar = disnake.Embed(
                                     title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                    description=f"Requesting Abyss Master role for user with id: {uid}",
-                                    colour=config.Error())
-                                embedVar.add_field(name="User Info", value=message, inline=False)
-                                embedVar.set_footer(text="Version: 1.0.1")
+                                    colour=config.Error(),
+                                    timestamp=datetime.datetime.now())
+                                embedVar.add_field(name="Abyss Statistics", value=message, inline=True)
+                                embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
                                 embedVar.set_image(
                                     url=config.banner_error
                                 )
@@ -696,21 +535,18 @@ async def reqabyssmaster(ctx, uid):
                     
                     else:
                         return await ctx.send("Error: Unable to fetch user info")
-    except Exception as e:
-        print(f'Error sending userinfo message: {e}')
-        return await ctx.send(embed=errors.create_error_embed(f"{e}"))
+        except Exception as e:
+            print(f'Error sending userinfo message: {e}')
+            return await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 # On Ready
 @bot.event
 async def on_ready():
-    if config.version != "2.0.0":
-        print("Please update the config file to the latest version!")
-        sys.exit()
     print("The bot is ready!")
     print(f'Logged in as {bot.user.name}#{bot.user.discriminator} | {bot.user.id}')
     print(f"I am on {len(bot.guilds)} server")
     print(f'Running on {platform.system()} {platform.release()} ({os.name})')
-    print(f'Bot Template Version: {config.version}')
+    print(f'Bot Version: {config.version}')
     print(f"Disnake version : {disnake.__version__}")
     print(f"Python version: {platform.python_version()}")
     print('================== Loaded Cogs ================')
