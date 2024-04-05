@@ -306,8 +306,9 @@ async def resetabyssdata(ctx, uid = None):
                 else:
                     return await ctx.send(f"User with id: {uid} has not claimed the Abyss Master role")
             else:
-                client_db.delete_all('users_claimed')
-                return await ctx.send("Deleted all Abyss Master data from database")
+                # delete all users from the database with server id
+                client_db.delete_many('users_claimed', {'server_id': ctx.guild.id})
+                return await ctx.send("Deleted all Abyss Master roles")
     except Exception as e:
         print(f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
