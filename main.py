@@ -361,7 +361,8 @@ async def getexploration(ctx, uid):
             if not uid.isdigit():
                 return await ctx.send("Please provide a valid user id")
 
-            cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
+            # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
+            cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
             client = genshin.Client(cookies)
             print(client)
                     
@@ -386,11 +387,19 @@ async def getexploration(ctx, uid):
 
             message_100 = ""
             if all_data_are_100:
-                message_100 += "Congratulations! All explorations are 100% completed!"
+                message_100 += "> Congratulations! All explorations are 100% completed!"
             else:
                 all_data_are_not_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
 
-                message_100 += f"Explorations that are not 100% completed: {', '.join(all_data_are_not_100)}"
+                message_100 += "> Explorations that are not 100% completed:"
+                for exploration in all_data_are_not_100:
+                    message_100 += f"\n> - {exploration}"
+                
+                message_data_100 = "> Explorations that are 100% completed:"
+                data_that_are_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] == 100]
+                for exploration in data_that_are_100:
+                    message_data_100 += f"\n> - {exploration}"
+                
 
             data_emoji_progress = {
                 "start_blank": 1225706893960282184,
@@ -402,28 +411,29 @@ async def getexploration(ctx, uid):
             }
 
             author = ctx.author
-            embed = disnake.Embed(title=f"{author.name}'s Exploration Progress", color=config.Success())
+            embed = disnake.Embed(title=f"{author.name}'s Exploration Progress", color=config.Success(), timestamp=datetime.datetime.now())
 
             for exploration in data_exploration:
                 message = ""
 
                 if exploration['exploration_percentage'] == 100:
-                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_full:{data_emoji_progress['back_full']}>"
+                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_full:{data_emoji_progress['back_full']}>"
                 elif exploration['exploration_percentage'] >= 60 and exploration['exploration_percentage'] < 100:
-                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_blank:{data_emoji_progress['back_blank']}>"
                 elif exploration['exploration_percentage'] >= 30 and exploration['exploration_percentage'] < 60:
-                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
                 elif exploration['exploration_percentage'] >= 10 and exploration['exploration_percentage'] < 30:
-                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
                 else:
-                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_blank:{data_emoji_progress['start_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_blank:{data_emoji_progress['start_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
 
-                embed.add_field(name=f"{exploration['name']} - <:world_level:1225721002588114954> Reputation: {exploration['level']}", value=message, inline=False)
+                embed.add_field(name=f"<:block_star:1225801267893370961> {exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}", value=message, inline=False)
             
-            embed.add_field(name="\n\nNote:", value=message_100, inline=False)
+            embed.add_field(name="Note:", value=message_100, inline=False)
+            embed.add_field(name="Extra Note:", value=message_data_100, inline=False)
             embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
             embed.set_image(
-                url=config.banner_success
+                url=config.banner_exploration
             )
 
             await ctx.send(embed=embed)
@@ -464,7 +474,7 @@ async def menu(ctx):
                     description="Check important commands, that you can use!",
                     colour=config.Success())
             embedVar.add_field(name="General Commands",
-                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n```{config.prefix}getexploration uid - To get the exploration stats```\n",
+                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",
                                             inline=False)
             embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
             embedVar.set_image(
@@ -482,7 +492,7 @@ async def menu(ctx):
                     description="Check important commands, that you can use!",
                     colour=config.Success())
             embedVar.add_field(name="General Commands",
-                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n```{config.prefix}getexploration uid - To get the exploration stats```\n",
+                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",
                                             inline=False)
             embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
             embedVar.set_image(
@@ -518,7 +528,7 @@ async def reqabyssmaster(ctx, uid):
             if user:
                 return await ctx.send("This user has already claimed the Abyss Master role")
                 
-            cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
+            cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
             client = genshin.Client(cookies)
             # cookies = await client.login_with_password(config.email, config.password)
             # {'cookie_token_v2': 'v2_CAQSDGM5b3FhcTNzM2d1OCD9062wBiiAhbKEBDD83ME_QgtiYnNfb3ZlcnNlYQ', 'account_mid_v2': '1izyx9ekyj_hy', 'account_id_v2': '133197436', 'ltoken_v2': 'v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ', 'ltmid_v2': '1izyx9ekyj_hy', 'ltuid_v2': '133197436'}
@@ -526,7 +536,7 @@ async def reqabyssmaster(ctx, uid):
             data_abyss = await client.get_spiral_abyss(uid, previous=False)
 
 
-                # request to https://enka.network/api/uid/
+            # request to https://enka.network/api/uid/
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"https://enka.network/api/uid/{uid}") as response:
                     if response.status == 200:
@@ -534,7 +544,7 @@ async def reqabyssmaster(ctx, uid):
                         player = data['playerInfo']
 
                         if player == None:
-                            return await ctx.send(f"Unable to fetch user info")
+                            return await ctx.send("Unable to fetch user info")
                             
                         if 'nickname' not in player:
                             player['nickname'] = 'None'
@@ -563,23 +573,23 @@ async def reqabyssmaster(ctx, uid):
 
                         total_wins = data_abyss.total_wins
                             
-                        message = "Fetched from Enka Network and Hoyolab"
-                        message += f"\n\n**User:** {player['nickname'] if player['nickname'] else 'None'}"
-                        message += f"\n**Adventure Rank:** {player['level'] if player['level'] else 'None'}"
-                        message += f"\n**World Level:** {player['worldLevel'] if player['worldLevel'] else 'None'}"
-                        message += f"\n**Abyss Progress:** {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}"
-                        message += f"\n**Abyss Stars Collected:** {total_stars} <:abyss_stars:1225579783660765195>"
-                        message += f"\n**Battles Fought:** {total_battles}/{total_wins}"
-                        message += f"\n**Total Retries:** {int(total_battles) - int(total_wins)}"
+                        message = ""
+                        # message += f"\n\n**User:** {player['nickname'] if player['nickname'] else 'None'}"
+                        # message += f"\n**Adventure Rank:** {player['level'] if player['level'] else 'None'}"
+                        # message += f"\n**World Level:** {player['worldLevel'] if player['worldLevel'] else 'None'}"
+                        # message += f"\n**Abyss Progress:** {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}"
+                        # message += f"\n**Abyss Stars Collected:** {total_stars} <:abyss_stars:1225579783660765195>"
+                        # message += f"\n**Battles Fought:** {total_battles}/{total_wins}"
+                        # message += f"\n**Total Retries:** {int(total_battles) - int(total_wins)}"
 
                         author = ctx.author
                             
                         # check if floor isn't 12 and chamber isn't 3
                         if int(player['towerFloorIndex']) != 12 or int(player['towerLevelIndex']) != 3:
-                            message += "\n\nSorry, I'm unable to grant you the Abyss Master role at the moment :("
-                            message += "\nYou are not on Floor 12, Chamber 3."
-                            message += "\nPlease try again when you reach Floor 12, Chamber 3."
-                            message += "\nThank you and good luck!"
+                            message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
+                            message += "\n> You are not on Floor 12, Chamber 3."
+                            message += "\n> Please try again when you reach Floor 12, Chamber 3."
+                            message += "\n> Thank you and good luck!"
 
                                 
                             print(f"Total Stars: {total_stars}")
@@ -588,7 +598,15 @@ async def reqabyssmaster(ctx, uid):
                                     title=f"{player['nickname'] if player['nickname'] else author}'s Info",
                                     colour=config.Error(),
                                     timestamp=datetime.datetime.now())
-                            embedVar.add_field(name="Abyss Statistics", value=message, inline=True)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Statistics", value="> Fetched from Enka Network and Hoyolab", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Name", value=f"> {player['nickname'] if player['nickname'] else 'None'}", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {player['level'] if player['level'] else 'None'}", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {player['worldLevel'] if player['worldLevel'] else 'None'}", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
+                            embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
                             embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
                             embedVar.set_image(
                                 url=config.banner_error
@@ -599,9 +617,9 @@ async def reqabyssmaster(ctx, uid):
                             print('User is on Floor 12, Chamber 3')
                             print(f"Total Stars: {total_stars}")
                             if int(total_stars) == 36:
-                                message += "\n\nCongratulations!"
-                                message += "\nYou have achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
-                                message += "\nYou are eligible for Abyss Master role!"
+                                message += "\n> Congratulations!"
+                                message += "\n> You have achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
+                                message += "\n> You are eligible for Abyss Master role!"
 
                                     # give user the Abyss Master role
                                 role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
@@ -620,7 +638,15 @@ async def reqabyssmaster(ctx, uid):
                                         title=f"{player['nickname'] if player['nickname'] else author}'s Info",
                                         colour=config.Success(),
                                         timestamp=datetime.datetime.now())
-                                    embedVar.add_field(name="Abyss Statistics", value=message, inline=True)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Statistics", value="> Fetched from Enka Network and Hoyolab", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Name", value=f"> {player['nickname'] if player['nickname'] else 'None'}", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {player['level'] if player['level'] else 'None'}", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {player['worldLevel'] if player['worldLevel'] else 'None'}", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
+                                    embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
                                     embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
                                     embedVar.set_image(
                                         url=config.banner_success
@@ -628,17 +654,25 @@ async def reqabyssmaster(ctx, uid):
 
                                     return await ctx.send(embed=embedVar)
                             else:
-                                message += "\n\nSorry, I'm unable to grant you the Abyss Master role at the moment :("
-                                message += "\nYou have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
-                                message += "\nYou are not eligible for Abyss Master role!"
-                                message += "\nPlease try again when you reach 36 <:abyss_stars:1225579783660765195>!"
-                                message += "\nThank you and good luck!"
+                                message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
+                                message += "\n> You have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
+                                message += "\n> You are not eligible for Abyss Master role!"
+                                message += "\n> Please try again when you reach 36 <:abyss_stars:1225579783660765195>!"
+                                message += "\n> Thank you and good luck!"
 
                                 embedVar = disnake.Embed(
                                     title=f"{player['nickname'] if player['nickname'] else author}'s Info",
                                     colour=config.Error(),
                                     timestamp=datetime.datetime.now())
-                                embedVar.add_field(name="Abyss Statistics", value=message, inline=True)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Statistics", value="> Fetched from Enka Network and Hoyolab", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Name", value=f"> {player['nickname'] if player['nickname'] else 'None'}", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {player['level'] if player['level'] else 'None'}", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {player['worldLevel'] if player['worldLevel'] else 'None'}", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
                                 embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
                                 embedVar.set_image(
                                     url=config.banner_error
