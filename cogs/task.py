@@ -1,6 +1,5 @@
 from disnake.ext import tasks, commands
-
-import time, genshin, config
+import time, genshin, config, disnake, datetime
 
 class task(commands.Cog):
     def __init__(self, bot):
@@ -20,28 +19,78 @@ class task(commands.Cog):
         # format the time
         current_time = time.strftime('%H:%M:%S', time.localtime(now))
 
-        # if the unix time is 03:00:00
-        if current_time == '03:00:00':
-            # get the genshin impact client
-            client = genshin.Client(game=genshin.Game.GENSHIN)
-            cookies = client.login_with_password(config.email, config.password)
+        # get current date
+        date = time.strftime('%d/%m/%Y', time.localtime(now))
+        day = time.strftime('%A', time.localtime(now))
+        month = time.strftime('%B', time.localtime(now))
+        year = time.strftime('%Y', time.localtime(now))
+        day_raw = time.strftime('%d', time.localtime(now))
+        month_raw = time.strftime('%m', time.localtime(now))
+        year_raw = time.strftime('%Y', time.localtime(now))
 
-            try:
-                reward = await client.claim_daily_reward()
-            except genshin.AlreadyClaimed:
-                # send a message to the user
-                try:
-                    await self.bot.get_user(212534595445456897).send(f"Daily reward already claimed")
-                except Exception as e:
-                    print(f'Error sending message: {e}')
-                    pass
-            else:
-                # send a message to the user
-                try:
-                    await self.bot.get_user(212534595445456897).send(f"Claimed the daily reward, Claimed {reward.amount}x {reward.name}")
-                except Exception as e:
-                    print(f'Error sending message: {e}')
-                    pass
+        print(f'{current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
+
+        # if day raw equals to 1 and 16
+        if day_raw in ('01', '16'):
+            # time must be 03:00:00
+            if current_time == '03:00:00':
+                # get members in the role of the guild id=1051526111135272990
+                guild = self.bot.get_guild(config.guild)
+                
+                # get the role
+                role = disnake.utils.get(guild.roles, name='Abyss Master')
+
+                member_ids = [member.id for member in guild.members if member.roles and role in member.roles]
+                
+                # reset the role
+                if member_ids:
+                    for member_id in member_ids:
+                        member = guild.get_member(member_id)
+                        await member.remove_roles(role)
+                    
+                    # get the channel
+                    channel = self.bot.get_channel(config.broadcast_channel)
+                    
+                    # send the message
+                    message_builder = "**Morning Travelers!**"
+                    message_builder += "\n\nToday is the day of the Abyss reset!"
+                    message_builder += "\nI have removed the Abyss Master role from all members who had it before"
+                    message_builder += "\n\nGood luck on your floor clears and I hope you get 36 <:abyss_stars:1225579783660765195>!"
+                    message_builder += "\nRemember to claim your Abyss Master role back by using the command `/reqabyssmaster`"
+                    message_builder += "\nin the <#991713323068444775> channel!"
+
+                    embedVar = disnake.Embed(
+                        title="Abyss Reset Notification",
+                        description=message_builder,
+                        colour=config.Success(),
+                        timestamp=datetime.datetime.now()
+                    )
+                    embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}")
+                    embedVar.set_image(url=config.abyss_header)
+
+                    await channel.send(embed=embedVar)
+                else:
+                    channel = self.bot.get_channel(config.broadcast_channel)
+                    
+                    message_builder = "**Morning Travelers!**"
+                    message_builder += "\n\nToday is the day of the Abyss reset!"
+                    message_builder += "\nI have removed the Abyss Master role from all members who had it before"
+                    message_builder += "\n\nGood luck on your floor clears and I hope you get 36 <:abyss_stars:1225579783660765195>!"
+                    message_builder += "\n\nRemember to claim your Abyss Master role back by using the command `/reqabyssmaster`"
+                    message_builder += "\nin the <#991713323068444775> channel!"
+
+                    embedVar = disnake.Embed(
+                        title="Abyss Reset Notification",
+                        description=message_builder,
+                        colour=config.Success(),
+                        timestamp=datetime.datetime.now()
+                    )
+                    embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}")
+                    embedVar.set_image(url=config.abyss_header)
+
+                    await channel.send(embed=embedVar)
+
+        
 
     @claim_rewards.before_loop
     async def before_printer(self):

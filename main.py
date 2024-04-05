@@ -255,6 +255,37 @@ async def getclaimedusers(ctx):
         await ctx.send(embed=embed)
 
 @bot.command()
+async def getabyssmaster(ctx):
+    try:
+        if ctx.author.id in config.owner_ids:
+            guild = ctx.guild
+            role = disnake.utils.get(guild.roles, name='Abyss Master')
+
+            if role:
+                member_ids = [member.id for member in guild.members if member.roles and role in member.roles]
+                
+                # tag the user
+                user_list = []
+                
+                if member_ids:
+                    no = 1
+                    for member_id in member_ids:
+                        user = guild.get_member(member_id)
+                        user_list.append(f"{no}. {user.mention}")
+                        no += 1
+                    embed = disnake.Embed(title="Abyss Master Role", description="\n".join(user_list), color=config.Success())
+                    await ctx.send(embed=embed)
+                else:
+                    embed = disnake.Embed(title="Error", description="No users have Abyss Master role!", color=config.Error())
+                    await ctx.send(embed=embed)
+        else:
+            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
+            await ctx.send(embed=embed)
+    except Exception as e:
+        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {e}", color=config.Error())
+        await ctx.send(embed=embed)
+
+@bot.command()
 async def resetabyssdata(ctx, uid = None):
     try:
         if ctx.author.id in config.owner_ids:
@@ -283,37 +314,35 @@ async def resetabyssdata(ctx, uid = None):
         
 
 @bot.command()
-async def resetabyssrole(ctx, uid = None):
+async def resetabyssrole(ctx, member: disnake.Member):
     try:
         if ctx.author.id in config.owner_ids:
-            if uid != None:
-                # check uid length must be between 9 and 10
-                if len(uid) < 9 or len(uid) > 10:
-                    return await ctx.send("Please provide a valid user id")
-                    
-                # check if uid is a number
-                if not uid.isdigit():
-                    return await ctx.send("Please provide a valid user id")
-                    
-                # check if uid registered in the database
-                user = client_db.find_one('users_claimed', {'uid': uid})
-                if user:
-                    member = await ctx.guild.fetch_member(user['user_id'])
-                    role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
+            if member:
+                role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
+                if role:
                     await member.remove_roles(role)
-                    return await ctx.send(f"Removed the Abyss Master role for user with id: {uid}")
+                    return await ctx.send(f"Removed the Abyss Master role from {member.mention}")
                 else:
-                    return await ctx.send(f"User with id: {uid} has not claimed the Abyss Master role")
+                    embed = disnake.Embed(title="Error", description="Abyss Master role not found!", color=config.Error())
+                    await ctx.send(embed=embed)
             else:
-                # reset all users with Abyss Master role
-                users = client_db.find('users_claimed', {})
-                for user in users:
-                    member = await ctx.guild.fetch_member(user['user_id'])
-                    role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
-                    await member.remove_roles(role)
-                
-                await ctx.send(f"Removed all Abyss Master roles")
+                guild = ctx.guild
+                role = disnake.utils.get(guild.roles, name='Abyss Master')
 
+                if role:
+                    member_ids = [member.id for member in guild.members if member.roles and role in member.roles]
+                    
+                    if member_ids:
+                        # reset all users with Abyss Master role
+                        for member_id in member_ids:
+                            member = await guild.fetch_member(member_id)
+                            await member.remove_roles(role)
+                        
+                        embed = disnake.Embed(title="Success", description="Removed all Abyss Master roles", color=config.Success())
+                        await ctx.send(embed=embed)
+                    else:
+                        embed = disnake.Embed(title="Error", description="No users have Abyss Master role!", color=config.Error())
+                        await ctx.send(embed=embed)
     except Exception as e:
         print(f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
