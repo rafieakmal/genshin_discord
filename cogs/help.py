@@ -53,9 +53,9 @@ class help(commands.Cog):
                         description="Check important commands, that you can use!",
                         colour=config.Success())
                     embedVar.add_field(name="General Commands",
-                                        value="```/reqabyssmaster - To request role Abyss Master```\n", 
+                                        value="```/reqabyssmaster - To request role Abyss Master```\n```/getexploration - To get the exploration stats```\n",
                                             inline=False)
-                    embedVar.set_footer(text="Version: 1.0.1")
+                    embedVar.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}", icon_url=inter.author.avatar.url)
                     embedVar.set_image(
                         url="https://i.pinimg.com/564x/2e/57/b4/2e57b4a27aa406a68bc36ee5b14a4ee6.jpg"
                     )

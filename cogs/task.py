@@ -57,7 +57,7 @@ class task(commands.Cog):
                     message_builder += "\nI have removed the Abyss Master role from all members who had it before"
                     message_builder += "\n\nGood luck on your floor clears and I hope you get 36 <:abyss_stars:1225579783660765195>!"
                     message_builder += "\nRemember to claim your Abyss Master role back by using the command `/reqabyssmaster`"
-                    message_builder += "\nin the <#991713323068444775> channel!"
+                    message_builder += "\nin the <#1065702573971091477> channel!"
 
                     embedVar = disnake.Embed(
                         title="Abyss Reset Notification",
@@ -77,7 +77,7 @@ class task(commands.Cog):
                     message_builder += "\nI have removed the Abyss Master role from all members who had it before"
                     message_builder += "\n\nGood luck on your floor clears and I hope you get 36 <:abyss_stars:1225579783660765195>!"
                     message_builder += "\n\nRemember to claim your Abyss Master role back by using the command `/reqabyssmaster`"
-                    message_builder += "\nin the <#991713323068444775> channel!"
+                    message_builder += "\nin the <#1065702573971091477> channel!"
 
                     embedVar = disnake.Embed(
                         title="Abyss Reset Notification",

@@ -348,6 +348,90 @@ async def resetabyssrole(ctx, member: disnake.Member):
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 @bot.command()
+async def getexploration(ctx, uid):
+    try:
+            if uid == None or uid == "":
+                return await ctx.send("Please provide a user id")
+                    
+            # check uid length must be between 9 and 10
+            if len(uid) < 9 or len(uid) > 10:
+                return await ctx.send("Please provide a valid user id")
+                
+                # check if uid is a number
+            if not uid.isdigit():
+                return await ctx.send("Please provide a valid user id")
+
+            cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
+            client = genshin.Client(cookies)
+            print(client)
+                    
+            data_profile = await client.get_genshin_user(uid)
+
+            # print(data_profile.explorations)
+
+            data_exploration = []
+
+            for exploration in data_profile.explorations:
+                if exploration.name == "Chenyu Vale":
+                    continue
+
+                data_exploration.append({
+                    "name": exploration.name,
+                    "level": exploration.level,
+                    "exploration_percentage": round((int(exploration.raw_explored) / 1000) * 100, 1),
+                    "icon": exploration.icon
+                })
+
+            all_data_are_100 = all(exploration['exploration_percentage'] == 100 for exploration in data_exploration)
+
+            message_100 = ""
+            if all_data_are_100:
+                message_100 += "Congratulations! All explorations are 100% completed!"
+            else:
+                all_data_are_not_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
+
+                message_100 += f"Explorations that are not 100% completed: {', '.join(all_data_are_not_100)}"
+
+            data_emoji_progress = {
+                "start_blank": 1225706893960282184,
+                "start_full": 1225706895915094067,
+                "mid_blank": 1225706884611444787,
+                "mid_full": 1225706891196502047,
+                "back_blank": 1225706887366971443,
+                "back_full": 1225706888939962399
+            }
+
+            author = ctx.author
+            embed = disnake.Embed(title=f"{author.name}'s Exploration Progress", color=config.Success())
+
+            for exploration in data_exploration:
+                message = ""
+
+                if exploration['exploration_percentage'] == 100:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_full:{data_emoji_progress['back_full']}>"
+                elif exploration['exploration_percentage'] >= 60 and exploration['exploration_percentage'] < 100:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                elif exploration['exploration_percentage'] >= 30 and exploration['exploration_percentage'] < 60:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                elif exploration['exploration_percentage'] >= 10 and exploration['exploration_percentage'] < 30:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                else:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_blank:{data_emoji_progress['start_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+
+                embed.add_field(name=f"{exploration['name']} - <:world_level:1225721002588114954> Reputation: {exploration['level']}", value=message, inline=False)
+            
+            embed.add_field(name="\n\nNote:", value=message_100, inline=False)
+            embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
+            embed.set_image(
+                url=config.banner_success
+            )
+
+            await ctx.send(embed=embed)
+    except Exception as e:
+        print(f'Error sending help message: {e}')
+        await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
+@bot.command()
 async def setprefix(ctx, prefix):
     try:
         if ctx.author.id in config.owner_ids:
@@ -380,9 +464,9 @@ async def menu(ctx):
                     description="Check important commands, that you can use!",
                     colour=config.Success())
             embedVar.add_field(name="General Commands",
-                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n", 
+                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n```{config.prefix}getexploration uid - To get the exploration stats```\n",
                                             inline=False)
-            embedVar.set_footer(text="Version: 1.0.1")
+            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
             embedVar.set_image(
                 url=config.banner_success
             )
@@ -398,9 +482,9 @@ async def menu(ctx):
                     description="Check important commands, that you can use!",
                     colour=config.Success())
             embedVar.add_field(name="General Commands",
-                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n", 
+                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n```{config.prefix}getexploration uid - To get the exploration stats```\n",
                                             inline=False)
-            embedVar.set_footer(text="Version: 1.0.1")
+            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
             embedVar.set_image(
                 url=config.banner_success
             )
