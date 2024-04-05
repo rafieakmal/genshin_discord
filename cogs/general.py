@@ -37,6 +37,95 @@ class general(commands.Cog):
             print(f'Error Sending Ping Command: {e}')
             await inter.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
 
+    @commands.slash_command(name='getexploration', description='Get the exploration progress of a user')
+    async def getexploration(self, inter: disnake.ApplicationCommandInteraction, uid: str):
+        try:
+            if uid == None or uid == "":
+                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                    
+            # check uid length must be between 9 and 10
+            if len(uid) < 9 or len(uid) > 10:
+                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                
+                # check if uid is a number
+            if not uid.isdigit():
+                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+
+            await inter.response.send_message("Please sit tight while I fetch your info")
+            last_message_id = await inter.original_response()
+            print(last_message_id)
+
+            cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
+            client = genshin.Client(cookies)
+            print(client)
+                    
+            data_profile = await client.get_genshin_user(uid)
+
+            # print(data_profile.explorations)
+
+            data_exploration = []
+
+            for exploration in data_profile.explorations:
+                # exclude data Chenyu Vale
+                if exploration.name == "Chenyu Vale":
+                    continue
+
+                data_exploration.append({
+                    "name": exploration.name,
+                    "level": exploration.level,
+                    "exploration_percentage": round((int(exploration.raw_explored) / 1000) * 100, 1),
+                    "icon": exploration.icon
+                })
+
+            all_data_are_100 = all(exploration['exploration_percentage'] == 100 for exploration in data_exploration)
+
+            message_100 = ""
+            if all_data_are_100:
+                message_100 += "Congratulations! All explorations are 100% completed!"
+            else:
+                all_data_are_not_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
+
+                message_100 += f"Explorations that are not 100% completed: {', '.join(all_data_are_not_100)}"
+
+            data_emoji_progress = {
+                "start_blank": 1225706893960282184,
+                "start_full": 1225706895915094067,
+                "mid_blank": 1225706884611444787,
+                "mid_full": 1225706891196502047,
+                "back_blank": 1225706887366971443,
+                "back_full": 1225706888939962399
+            }
+
+            author = inter.author
+            embed = disnake.Embed(title=f"{author.name}'s Exploration Progress", color=config.Success())
+
+            for exploration in data_exploration:
+                message = ""
+
+                if exploration['exploration_percentage'] == 100:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_full:{data_emoji_progress['back_full']}>"
+                elif exploration['exploration_percentage'] >= 60 and exploration['exploration_percentage'] < 100:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                elif exploration['exploration_percentage'] >= 30 and exploration['exploration_percentage'] < 60:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                elif exploration['exploration_percentage'] >= 10 and exploration['exploration_percentage'] < 30:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_full:{data_emoji_progress['start_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+                else:
+                    message += f"\nProgress: {exploration['exploration_percentage']}%\n<:start_blank:{data_emoji_progress['start_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
+
+                embed.add_field(name=f"{exploration['name']} - <:world_level:1225721002588114954> Reputation: {exploration['level']}", value=message, inline=False)
+            
+            embed.add_field(name="\n\nNote:", value=message_100, inline=False)
+            embed.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}", icon_url=inter.author.avatar.url)
+            embed.set_image(
+                url=config.banner_success
+            )
+
+            await last_message_id.edit(embed=embed)
+        except Exception as e:
+            print(f'Error sending help message: {e}')
+            await inter.followup.send(embed=errors.create_error_embed(f"{e}"))
+
     # user info command
     @commands.slash_command(name='reqabyssmaster', description='Request the Abyss Master role')
     async def reqabyssmaster(self, inter: disnake.ApplicationCommandInteraction, uid: str):
