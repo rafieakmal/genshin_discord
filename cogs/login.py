@@ -90,7 +90,11 @@ class LoginModal(disnake.ui.Modal):
                         "user_name": author.name,
                         "cookies": cookies,
                         "ltuid": cookies["ltuid_v2"],
-                        "ltoken": cookies["ltoken_v2"]
+                        "ltoken": cookies["ltoken_v2"],
+                        "cookie_token": cookies["cookie_token_v2"],
+                        "account_id": cookies["account_id_v2"],
+                        "account_mid": cookies["account_mid_v2"],
+                        "ltmid": cookies["ltmid_v2"],
                     }
 
                     # save data to database
