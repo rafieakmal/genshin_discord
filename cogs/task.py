@@ -33,7 +33,7 @@ class task(commands.Cog):
         month_raw = time.strftime('%m', time.localtime(now))
         year_raw = time.strftime('%Y', time.localtime(now))
 
-        print(f'Current Thread Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
+        # print(f'Current Thread Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
 
         # if day raw equals to 1 and 16
         if day_raw in ('01', '16'):
@@ -99,6 +99,31 @@ class task(commands.Cog):
                     embedVar.set_image(url=config.abyss_header)
 
                     await channel.send(embed=embedVar)
+        else:
+            if current_time == '03:10:00':
+                # get all users token
+                users = client_db.find('users', {})
+                if users:
+                    for user in users:
+                        cookies = {
+                            "ltuid_v2": user['ltuid'],
+                            "ltoken_v2": user['ltoken']
+                        }
+
+                        # get the client
+                        client = genshin.Client()
+                        client.set_cookies(cookies)
+                        client.default_game = genshin.Game.GENSHIN
+
+                        # get the daily check-in
+                        try:
+                            reward = await client.claim_daily_reward()
+                        except genshin.AlreadyClaimed:
+                            await self.bot.get_user(user['user_id']).send("You have already claimed your daily reward!")
+                        else:
+                            await self.bot.get_user(user['user_id']).send(f"Your daily reward has been claimed! {reward.amount} {reward.name} has been added to your account!")
+            
+
 
         
 
