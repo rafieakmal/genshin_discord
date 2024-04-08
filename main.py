@@ -430,8 +430,8 @@ async def getexploration(ctx, uid):
 
                 embed.add_field(name=f"<:block_star:1225801267893370961> {exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}", value=message, inline=False)
             
-            embed.add_field(name="Note:", value=message_100, inline=False)
-            embed.add_field(name="Extra Note:", value=message_data_100, inline=False)
+            embed.add_field(name="<:block_star:1225801267893370961> Note:", value=message_100, inline=False)
+            embed.add_field(name="<:block_star:1225801267893370961> Extra Note:", value=message_data_100, inline=False)
             embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=ctx.author.avatar.url)
             embed.set_image(
                 url=config.banner_exploration

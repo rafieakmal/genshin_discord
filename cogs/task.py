@@ -1,5 +1,10 @@
 from disnake.ext import tasks, commands
 import time, genshin, config, disnake, datetime
+from database.database import Database
+
+# create a database object
+client_db = Database()
+print('Connected to the database')
 
 class task(commands.Cog):
     def __init__(self, bot):
@@ -28,7 +33,7 @@ class task(commands.Cog):
         month_raw = time.strftime('%m', time.localtime(now))
         year_raw = time.strftime('%Y', time.localtime(now))
 
-        print(f'{current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
+        print(f'Current Thread Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
 
         # if day raw equals to 1 and 16
         if day_raw in ('01', '16'):
@@ -48,6 +53,9 @@ class task(commands.Cog):
                         member = guild.get_member(member_id)
                         await member.remove_roles(role)
                     
+                    # delete all users from the database
+                    client_db.delete_many('users_claimed', {})
+                    
                     # get the channel
                     channel = self.bot.get_channel(config.broadcast_channel)
                     
@@ -56,8 +64,8 @@ class task(commands.Cog):
                     message_builder += "\n\nToday is the day of the Abyss reset!"
                     message_builder += "\nI have removed the Abyss Master role from all members who had it before"
                     message_builder += "\n\nGood luck on your floor clears and I hope you get 36 <:abyss_stars:1225579783660765195>!"
-                    message_builder += "\nRemember to claim your Abyss Master role back by using the command `/reqabyssmaster`"
-                    message_builder += "\nin the <#1065702573971091477> channel!"
+                    message_builder += "\nRemember, travelers! The time has come to reclaim your rightful place as the Abyss Master. Use the command ``/reqabyssmaster``"
+                    message_builder += "\nin the <#1065702573971091477> channel and let your power be known!"
 
                     embedVar = disnake.Embed(
                         title="Abyss Reset Notification",
@@ -70,14 +78,16 @@ class task(commands.Cog):
 
                     await channel.send(embed=embedVar)
                 else:
+                    client_db.delete_many('users_claimed', {})
+
                     channel = self.bot.get_channel(config.broadcast_channel)
                     
                     message_builder = "**Morning Travelers!**"
                     message_builder += "\n\nToday is the day of the Abyss reset!"
                     message_builder += "\nI have removed the Abyss Master role from all members who had it before"
                     message_builder += "\n\nGood luck on your floor clears and I hope you get 36 <:abyss_stars:1225579783660765195>!"
-                    message_builder += "\n\nRemember to claim your Abyss Master role back by using the command `/reqabyssmaster`"
-                    message_builder += "\nin the <#1065702573971091477> channel!"
+                    message_builder += "\nRemember, travelers! The time has come to reclaim your rightful place as the Abyss Master. Use the command ``/reqabyssmaster``"
+                    message_builder += "\nin the <#1065702573971091477> channel and let your power be known!"
 
                     embedVar = disnake.Embed(
                         title="Abyss Reset Notification",
