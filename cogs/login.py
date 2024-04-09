@@ -13,6 +13,7 @@ from database.database import Database
 import asyncio
 import datetime
 import sys
+import random
 from disnake import TextInputStyle
 
 # Connecting to the database
@@ -71,9 +72,10 @@ class LoginModal(disnake.ui.Modal):
             print(f"Email: {email} | Password: {password}")
             try:
                 client = genshin.Client()
-                cookies = await client.login_with_password(email, password)
+                port_randomize = random.randint(5000, 9000)
+                cookies = await client.login_with_password(email, password, port=port_randomize)
                 if cookies:
-                    os.system('netstat -ano | findstr :5000 | findstr /B 0.0.0.0')
+                    os.system(f'netstat -ano | findstr :{port_randomize} | findstr /B 0.0.0.0')
                     embedVar = disnake.Embed(
                         title="HoYoLAB Login",
                         description="You have successfully logged in to HoYoLAB",
@@ -101,7 +103,7 @@ class LoginModal(disnake.ui.Modal):
 
                     restart_program()
                 else:
-                    os.system('netstat -ano | findstr :5000 | findstr /B 0.0.0.0')
+                    os.system(f'netstat -ano | findstr :{port_randomize} | findstr /B 0.0.0.0')
                     await inter.followup.send(embed=errors.create_error_embed("Error Logging in to HoYoLAB"))
             except Exception as e:
                 await inter.send(embed=errors.create_error_embed(f"{e}"))
