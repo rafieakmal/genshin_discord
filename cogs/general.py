@@ -196,7 +196,18 @@ class general(commands.Cog):
                     except genshin.AlreadyClaimed:
                         await inter.edit_original_response(content="You have already claimed your daily reward!")
                     else:
-                        await inter.edit_original_response(content=f"Your daily reward has been claimed! {reward.amount} {reward.name} has been added to your account!")
+                        embedVar = disnake.Embed(
+                            title="Your daily reward has been claimed!",
+                            colour=config.Success(),
+                            timestamp=datetime.datetime.now())
+                        embedVar.add_field(name="<:block_star:1225801267893370961> Reward", value=f"> {reward.name}", inline=True)
+                        embedVar.add_field(name="<:block_star:1225801267893370961> Amount", value=f"> {reward.amount}x", inline=True)
+                        embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
+                        embedVar.set_thumbnail(
+                            url=reward.icon
+                        )
+
+                        await inter.edit_original_response(embed=embedVar)
         except Exception as e:
             await inter.response.send_message(embed=errors.create_error_embed(f"{e}"), ephemeral=True)
 
