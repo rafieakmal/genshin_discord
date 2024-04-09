@@ -81,7 +81,7 @@ class LoginModal(disnake.ui.Modal):
                         description="You have successfully logged in to HoYoLAB",
                         colour=config.Success(),
                         timestamp=datetime.datetime.now())
-                    embedVar.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}", icon_url=inter.author.avatar.url)
+                    embedVar.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}")
 
                     await inter.followup.send(embed=embedVar, ephemeral=True)
 
@@ -107,8 +107,10 @@ class LoginModal(disnake.ui.Modal):
                     await inter.followup.send(embed=errors.create_error_embed("Error Logging in to HoYoLAB"))
             except Exception as e:
                 await inter.send(embed=errors.create_error_embed(f"{e}"))
+                restart_program()
         except Exception as e:
             await inter.send(embed=errors.create_error_embed(f"{e}"))
+            restart_program()
 
 class login(commands.Cog):
     

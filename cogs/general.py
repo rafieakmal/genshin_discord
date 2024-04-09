@@ -144,6 +144,26 @@ class general(commands.Cog):
         except Exception as e:
             print(f'Error sending help message: {e}')
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
+
+    @commands.slash_command(name='broadcast', description='Broadcast a message to a channel')
+    async def broadcast(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message: str):
+        try:
+            if inter.author.id not in config.owner_ids:
+                return await inter.response.send_message("You need to have the `Bot Owner` role to use this command", ephemeral=True)
+            await inter.response.defer()
+            embedVar = disnake.Embed(
+                title="Hi there!",
+                description="This is a broadcast message from the bot owner.",
+                colour=config.Success(),
+                timestamp=datetime.datetime.now())
+            embedVar.add_field(name="<:block_star:1225801267893370961> Message", value=f"> {message}", inline=False)
+            embedVar.set_thumbnail(
+                url='https://cdn.wanderer.moe/genshin-impact/emotes/teyvat-times--series-emojis-5.png'
+            )
+            await channel.send(embed=embedVar)
+            await inter.edit_original_response(content=f"Message sent to {channel.mention}")
+        except Exception as e:
+            await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
     
     @commands.slash_command(name='daily', description='Claims your daily reward')
     async def daily(self, inter: disnake.ApplicationCommandInteraction, action: str = commands.Param(choices=["genshin", "honkai impact 3rd", "honkai star rail"])):
@@ -202,7 +222,7 @@ class general(commands.Cog):
                             timestamp=datetime.datetime.now())
                         embedVar.add_field(name="<:block_star:1225801267893370961> Reward", value=f"> {reward.name}", inline=True)
                         embedVar.add_field(name="<:block_star:1225801267893370961> Amount", value=f"> {reward.amount}x", inline=True)
-                        embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
+                        embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}")
                         embedVar.set_thumbnail(
                             url=reward.icon
                         )
@@ -358,7 +378,7 @@ class general(commands.Cog):
                             embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
                             # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
                             embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
+                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}")
                             embedVar.set_image(
                                 url=config.banner_error
                             )
@@ -376,7 +396,7 @@ class general(commands.Cog):
                             embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
                             # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
                             embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=author.avatar.url)
+                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}")
                             embedVar.set_image(
                                 url=config.banner_success
                             )
@@ -398,7 +418,7 @@ class general(commands.Cog):
         try:
             embed = disnake.Embed(title="Invite Me", color=config.Success())
             embed.add_field (name="Invite Link", value=f"[Click Here](https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=8&scope=bot%20applications.commands)", inline=False)
-            embed.set_footer(text=f'Requested by {inter.author}', icon_url=inter.author.avatar.url)
+            embed.set_footer(text=f'Requested by {inter.author}')
             await inter.response.send_message(embed=embed)
         except Exception as e:
             print(f'Error sending invite message: {e}')
