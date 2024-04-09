@@ -31,14 +31,14 @@ class LoginModal(disnake.ui.Modal):
         components = [
             disnake.ui.TextInput(
                 label="Email",
-                placeholder="Email HoYoLAB",
+                placeholder="Your HoYoLAB Email",
                 custom_id="email",
                 style=TextInputStyle.short,
                 max_length=50,
             ),
             disnake.ui.TextInput(
                 label="Password",
-                placeholder="Password HoYoLAB",
+                placeholder="Your HoYoLAB Password",
                 custom_id="password",
                 style=TextInputStyle.short,
             ),
@@ -53,7 +53,7 @@ class LoginModal(disnake.ui.Modal):
             last_message_id = await inter.original_response()
             print(last_message_id)
 
-            embed = disnake.Embed(title="HoYoLab Login", color=0x00FF00)
+            embed = disnake.Embed(title="HoYoLAB Login", color=0x00FF00)
             email = ""
             password = ""
 
@@ -130,7 +130,7 @@ class login(commands.Cog):
             # Check if the user is already logged in
             user = client_db.find_one('users', {'user_id': author.id})
             if user:
-                return await inter.response.send_message("You are already logged in!", ephemeral=True)
+                return await inter.send(embed=errors.create_error_embed("You are already logged in to HoYoLAB!"))
             
             await inter.response.send_modal(LoginModal())
         except Exception as e:

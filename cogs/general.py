@@ -39,24 +39,34 @@ class general(commands.Cog):
 
     @commands.slash_command(name='getexploration', description='Get the exploration progress of a user')
     async def getexploration(self, inter: disnake.ApplicationCommandInteraction, uid: str):
+        await inter.response.defer()
+        await asyncio.sleep(3)
         try:
             if uid == None or uid == "":
-                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                await inter.edit_original_response("Please provide a user id")
                     
             # check uid length must be between 9 and 10
             if len(uid) < 9 or len(uid) > 10:
-                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                await inter.edit_original_response("Please provide a valid user id")
                 
                 # check if uid is a number
             if not uid.isdigit():
-                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                await inter.edit_original_response("Please provide a valid user id")
 
-            await inter.response.send_message("Please sit tight while I fetch your info")
-            last_message_id = await inter.original_response()
-            print(last_message_id)
 
-            # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
-            cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
+            user_logged_in = client_db.find_one('users', {'user_id': inter.author.id})
+            if user_logged_in:
+                cookies = {
+                    "ltuid_v2": user_logged_in['ltuid'],
+                    "ltoken_v2": user_logged_in['ltoken'],
+                    "cookie_token_v2": user_logged_in['cookie_token'],
+                    "account_id_v2": user_logged_in['account_id'],
+                    "account_mid_v2": user_logged_in['account_mid'],
+                    "ltmid_v2": user_logged_in['ltmid'],
+                }
+            else:
+                cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
+
             client = genshin.Client(cookies)
             print(client)
                     
@@ -130,14 +140,71 @@ class general(commands.Cog):
                 url=config.banner_exploration
             )
 
-            await last_message_id.edit(embed=embed)
+            await inter.edit_original_response(embed=embed)
         except Exception as e:
             print(f'Error sending help message: {e}')
-            await inter.followup.send(embed=errors.create_error_embed(f"{e}"))
+            await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
+    
+    @commands.slash_command(name='daily', description='Claims your daily reward')
+    async def daily(self, inter: disnake.ApplicationCommandInteraction, action: str = commands.Param(choices=["genshin", "honkai impact 3rd", "honkai star rail"])):
+        # get logged in user
+        try:
+            author = inter.author
+            await inter.response.defer()
+            await asyncio.sleep(3)
+            # check if user has already claimed the daily reward
+            user = client_db.find_one('users', {'user_id': author.id})
+            if user:
+                cookies = {
+                    "ltuid_v2": user['ltuid'],
+                    "ltoken_v2": user['ltoken'],
+                    "cookie_token_v2": user['cookie_token'],
+                    "account_id_v2": user['account_id'],
+                    "account_mid_v2": user['account_mid'],
+                    "ltmid_v2": user['ltmid'],
+                }
+
+                print(cookies)
+
+                # get the client
+                client = genshin.Client(debug=True)
+                client.set_cookies(cookies)
+                if action == "genshin":
+                    client.default_game = genshin.Game.GENSHIN
+                elif action == "honkai impact 3rd":
+                    client.default_game = genshin.Game.HONKAI
+                elif action == "honkai star rail":
+                    client.default_game = genshin.Game.STARRAIL
+
+                print(client)
+
+                # get the daily check-in
+
+                signed_in, claimed_rewards = await client.get_reward_info()
+
+                print(signed_in, claimed_rewards)
+
+                if signed_in:
+                    await inter.edit_original_response(content="You have already claimed your daily reward!")
+                else:
+                    try:
+                        reward = await client.claim_daily_reward()
+                    except genshin.InvalidCookies:
+                        await inter.edit_original_response(content="Invalid cookies.")
+                    except genshin.GeetestTriggered:
+                        print("Geetest triggered on daily reward.")
+                    except genshin.AlreadyClaimed:
+                        await inter.edit_original_response(content="You have already claimed your daily reward!")
+                    else:
+                        await inter.edit_original_response(content=f"Your daily reward has been claimed! {reward.amount} {reward.name} has been added to your account!")
+        except Exception as e:
+            await inter.response.send_message(embed=errors.create_error_embed(f"{e}"), ephemeral=True)
 
     # user info command
     @commands.slash_command(name='reqabyssmaster', description='Request the Abyss Master role')
     async def reqabyssmaster(self, inter: disnake.ApplicationCommandInteraction, uid: str):
+        await inter.response.defer()
+        await asyncio.sleep(3)
         try:
             is_error = False
 
@@ -148,31 +215,35 @@ class general(commands.Cog):
             
             # get the user info from genshin api
             if uid == None or uid == "":
-                await inter.response.send_message("Please provide a user id", ephemeral=True)
+                return await inter.edit_original_response("Please provide a user id")
                         
             # check uid length must be between 9 and 10
             if len(uid) < 9 or len(uid) > 10:
-                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                return await inter.edit_original_response("Please provide a valid user id")
                     
             # check if uid is a number
             if not uid.isdigit():
-                await inter.response.send_message("Please provide a valid user id", ephemeral=True)
+                return await inter.edit_original_response("Please provide a valid user id")
 
             # check if uid registered in the database
             user = client_db.find_one('users_claimed', {'uid': uid, 'server_id': inter.guild.id})
             if user:
                 print('User has already claimed Abyss Master role')
-                return await inter.response.send_message("This user has already claimed the Abyss Master role")
+                return await inter.edit_original_response("This user has already claimed the Abyss Master role")
                 
-            await inter.response.send_message("Please sit tight while I fetch your info")
-            last_message_id = await inter.original_response()
-            print(last_message_id)
+            user_logged_in = client_db.find_one('users', {'user_id': inter.author.id})
+            if user_logged_in:
+                cookies = {
+                    "ltuid_v2": user_logged_in['ltuid'],
+                    "ltoken_v2": user_logged_in['ltoken'],
+                    "cookie_token_v2": user_logged_in['cookie_token'],
+                    "account_id_v2": user_logged_in['account_id'],
+                    "account_mid_v2": user_logged_in['account_mid'],
+                    "ltmid_v2": user_logged_in['ltmid'],
+                }
+            else:
+                cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
 
-            # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OBokZGYxODE1ZjEtOTYwMi00NDU4LWE2NzctZDU5NjJjOTNiODVhIOijqbAGKNPj5_4EMPzcwT9CC2Jic19vdmVyc2Vh"}
-            # client = genshin.Client()
-            # cookies = await client.login_with_password(config.email, config.password)
-            # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
-            cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
             client = genshin.Client(cookies)
             print(client)
                     
@@ -218,13 +289,6 @@ class general(commands.Cog):
                         total_wins = data_abyss.total_wins
                                 
                         message = ""
-                        # message += f"\n\n**User:** {player['nickname'] if player['nickname'] else 'None'}"
-                        # message += f"\n**Adventure Rank:** {player['level'] if player['level'] else 'None'}"
-                        # message += f"\n**World Level:** {player['worldLevel'] if player['worldLevel'] else 'None'}"
-                        # message += f"\n**Abyss Progress:** {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}"
-                        # message += f"\n**Abyss Stars Collected:** {total_stars} <:abyss_stars:1225579783660765195>"
-                        # message += f"\n**Battles Fought:** {total_battles}/{total_wins}"
-                        # message += f"\n**Total Retries:** {int(total_battles) - int(total_wins)}"
 
                         author = inter.author
                                 
@@ -236,13 +300,8 @@ class general(commands.Cog):
                             message += "\n> Please try again when you reach Floor 12, Chamber 3."
                             message += "\n> Thank you and good luck!"
 
-                                    
-                            # print(f"Total Stars: {total_stars}")
-
                             is_error = True
                         else:
-                            # print('User is on Floor 12, Chamber 3')
-                            # print(f"Total Stars: {total_stars}")
                             if int(total_stars) == 36:
                                 # print('User has 9 stars')
                                 message += "\n> Congratulations!"
@@ -258,7 +317,7 @@ class general(commands.Cog):
                                         await member.add_roles(role)
                                     except Exception as e:
                                         print(f'Error adding role to member: {e}')
-                                        await last_message_id.edit_original_response(content="Unable to add Abyss Master role to user")
+                                        await inter.edit_original_response(content="Unable to add Abyss Master role to user")
                                         
                                     # add the user to the database
                                     client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': inter.guild.id})
@@ -312,13 +371,13 @@ class general(commands.Cog):
                             )
 
                         # edit the message from the last message id
-                        await last_message_id.edit(embed=embedVar)
+                        await inter.edit_original_response(embed=embedVar)
                         
                     else:
-                        await last_message_id.edit_original_response(content="Unable to fetch user info")
+                        await inter.edit_original_response(content="Unable to fetch user info")
         except Exception as e:
             # print(f'Error sending userinfo message: {e}')
-            await inter.followup.send(embed=errors.create_error_embed(f"{e}"))
+            await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
 
 
     # invite the bot to your server

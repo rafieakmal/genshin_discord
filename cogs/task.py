@@ -33,7 +33,7 @@ class task(commands.Cog):
         month_raw = time.strftime('%m', time.localtime(now))
         year_raw = time.strftime('%Y', time.localtime(now))
 
-        print(f'Current Thread Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
+        # print(f'Current Thread Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
 
         # if day raw equals to 1 and 16
         if day_raw in ('01', '16'):
@@ -130,6 +130,8 @@ class task(commands.Cog):
                         print(signed_in, claimed_rewards)
 
                         if signed_in:
+                            pass
+                        else:
                             try:
                                 reward = await client.claim_daily_reward()
                             except genshin.InvalidCookies:
@@ -140,8 +142,6 @@ class task(commands.Cog):
                                 await self.bot.get_user(user['user_id']).send("You have already claimed your daily reward!")
                             else:
                                 await self.bot.get_user(user['user_id']).send(f"Your daily reward has been claimed! {reward.amount} {reward.name} has been added to your account!")
-                        else:
-                            pass
             
 
 
