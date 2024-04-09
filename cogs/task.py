@@ -141,7 +141,18 @@ class task(commands.Cog):
                             except genshin.AlreadyClaimed:
                                 await self.bot.get_user(user['user_id']).send("You have already claimed your daily reward!")
                             else:
-                                await self.bot.get_user(user['user_id']).send(f"Your daily reward has been claimed! {reward.amount} {reward.name} has been added to your account!")
+                                embedVar = disnake.Embed(
+                                    title="Your daily reward has been claimed!",
+                                    colour=config.Success(),
+                                    timestamp=datetime.datetime.now())
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Reward", value=f"> {reward.name}", inline=True)
+                                embedVar.add_field(name="<:block_star:1225801267893370961> Amount", value=f"> {reward.amount}x", inline=True)
+                                embedVar.set_footer(text=f"Bot Version: {config.version}")
+                                embedVar.set_thumbnail(
+                                    url=reward.icon
+                                )
+
+                                await self.bot.get_user(user['user_id']).send(embed=embedVar)
             
 
 

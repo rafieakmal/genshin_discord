@@ -79,7 +79,6 @@ class LoginModal(disnake.ui.Modal):
                         description="You have successfully logged in to HoYoLAB",
                         colour=config.Success(),
                         timestamp=datetime.datetime.now())
-                    embedVar.add_field(name="Raw JSON", value=json.dumps(cookies), inline=False)
                     embedVar.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}", icon_url=inter.author.avatar.url)
 
                     await inter.followup.send(embed=embedVar, ephemeral=True)
@@ -88,13 +87,13 @@ class LoginModal(disnake.ui.Modal):
                     data = {
                         "user_id": author.id,
                         "user_name": author.name,
-                        "cookies": cookies,
                         "ltuid": cookies["ltuid_v2"],
                         "ltoken": cookies["ltoken_v2"],
                         "cookie_token": cookies["cookie_token_v2"],
                         "account_id": cookies["account_id_v2"],
                         "account_mid": cookies["account_mid_v2"],
                         "ltmid": cookies["ltmid_v2"],
+
                     }
 
                     # save data to database
@@ -105,11 +104,8 @@ class LoginModal(disnake.ui.Modal):
                     os.system('netstat -ano | findstr :5000 | findstr /B 0.0.0.0')
                     await inter.followup.send(embed=errors.create_error_embed("Error Logging in to HoYoLAB"))
             except Exception as e:
-                os.system('netstat -ano | findstr :5000 | findstr /B 0.0.0.0')
-                print(f'Error Logging in: {e}')
-                restart_program()
+                await inter.send(embed=errors.create_error_embed(f"{e}"))
         except Exception as e:
-            print(f'Error Sending Login Command: {e}')
             await inter.send(embed=errors.create_error_embed(f"{e}"))
 
 class login(commands.Cog):
