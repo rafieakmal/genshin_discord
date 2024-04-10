@@ -76,15 +76,6 @@ class LoginModal(disnake.ui.Modal):
                 cookies = await client.login_with_password(email, password, port=port_randomize)
                 if cookies:
                     os.system(f'netstat -ano | findstr :{port_randomize} | findstr /B 0.0.0.0')
-                    embedVar = disnake.Embed(
-                        title="HoYoLAB Login",
-                        description="You have successfully logged in to HoYoLAB",
-                        colour=config.Success(),
-                        timestamp=datetime.datetime.now())
-                    embedVar.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}")
-
-                    await inter.followup.send(embed=embedVar, ephemeral=True)
-
                     # Save the cookies to the database
                     data = {
                         "user_id": author.id,
@@ -101,7 +92,14 @@ class LoginModal(disnake.ui.Modal):
                     # save data to database
                     client_db.insert_one('users', data)
 
-                    restart_program()
+                    embedVar = disnake.Embed(
+                        title="HoYoLAB Login",
+                        description="You have successfully logged in to HoYoLAB",
+                        colour=config.Success(),
+                        timestamp=datetime.datetime.now())
+                    embedVar.set_footer(text=f"Requested by {inter.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
+
+                    await inter.followup.send(embed=embedVar, ephemeral=True)
                 else:
                     os.system(f'netstat -ano | findstr :{port_randomize} | findstr /B 0.0.0.0')
                     await inter.followup.send(embed=errors.create_error_embed("Error Logging in to HoYoLAB"))

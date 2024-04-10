@@ -176,7 +176,7 @@ async def update(ctx):
             if platform.system() == "Windows":
                 try:
                     embed = disnake.Embed(title="Updating... (Windows)", description="Updating the bot from the Github Repo...", color=config.Success())
-                    embed.set_footer(text=f"Requested by {ctx.author}")
+                    embed.set_footer(text=f"Requested by {ctx.author}", icon_url=config.icon_url_front)
                     await ctx.send(embed=embed)
                     subprocess.call('cls')
                     subprocess.call("git pull", shell=True)
@@ -188,7 +188,7 @@ async def update(ctx):
             elif platform.system() == "Linux":
                 try:
                     embed = disnake.Embed(title="Updating... (Linux)", description="Updating the bot from the Github Repo...", color=config.Success())
-                    embed.set_footer(text=f"Requested by {ctx.author}")
+                    embed.set_footer(text=f"Requested by {ctx.author}", icon_url=config.icon_url_front)
                     await ctx.send(embed=embed)
                     subprocess.call('clear')
                     subprocess.call(["git", "pull"])
@@ -432,7 +432,7 @@ async def getexploration(ctx, uid):
             
             embed.add_field(name="<:block_star:1225801267893370961> Note:", value=message_100, inline=False)
             embed.add_field(name="<:block_star:1225801267893370961> Extra Note:", value=message_data_100, inline=False)
-            embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}")
+            embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embed.set_image(
                 url=config.banner_exploration
             )
@@ -477,7 +477,7 @@ async def menu(ctx):
             embedVar.add_field(name="General Commands",
                 value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",
                                             inline=False)
-            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}")
+            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embedVar.set_image(
                 url=config.banner_success
             )
@@ -495,7 +495,7 @@ async def menu(ctx):
             embedVar.add_field(name="General Commands",
                 value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",
                                             inline=False)
-            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}")
+            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embedVar.set_image(
                 url=config.banner_success
             )
@@ -608,7 +608,7 @@ async def reqabyssmaster(ctx, uid):
                             embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
                             # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
                             embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}")
+                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
                             embedVar.set_image(
                                 url=config.banner_error
                             )
@@ -648,7 +648,7 @@ async def reqabyssmaster(ctx, uid):
                                     embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
                                     # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
                                     embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                                    embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}")
+                                    embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
                                     embedVar.set_image(
                                         url=config.banner_success
                                     )
@@ -674,7 +674,7 @@ async def reqabyssmaster(ctx, uid):
                                 embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
                                 # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
                                 embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                                embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}")
+                                embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
                                 embedVar.set_image(
                                     url=config.banner_error
                                 )
@@ -720,17 +720,17 @@ async def reload(inter: disnake.ApplicationCommandInteraction, cog: str):
             try:
                 bot.reload_extension(f"cogs.{cog}")
                 embed = disnake.Embed(title="Success", description=f"Reloaded {cog}", color=config.Success())
-                embed.set_footer(text=f"Requested by {inter.author}")
+                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
                 embed.set_thumbnail(url=inter.guild.me.avatar.url)
                 await inter.send(embed=embed, ephemeral=True)
             except Exception as e:
                 embed = disnake.Embed(title="Error", description=f"Failed to reload {cog} because of {e}", color=config.Error())
-                embed.set_footer(text=f"Requested by {inter.author}")
+                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
                 embed.set_thumbnail(url=inter.guild.me.avatar.url)
                 await inter.send(embed=embed, ephemeral=True)
         else:
             embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            embed.set_footer(text=f"Requested by {inter.author}")
+            embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
             embed.set_thumbnail(url=inter.guild.me.avatar.url)
             await inter.send(embed=embed, ephemeral=True)
     except Exception as e:
@@ -744,17 +744,17 @@ async def load(inter: disnake.ApplicationCommandInteraction, cog: str):
             try:
                 bot.load_extension(f"cogs.{cog}")
                 embed = disnake.Embed(title="Success", description=f"Loaded {cog}", color=config.Success())
-                embed.set_footer(text=f"Requested by {inter.author}")
+                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
                 embed.set_thumbnail(url=inter.guild.me.avatar.url)
                 await inter.send(embed=embed, ephemeral=True)
             except Exception as e:
                 embed = disnake.Embed(title="Error", description=f"Failed to load {cog} because of {e}", color=config.Error())
-                embed.set_footer(text=f"Requested by {inter.author}")
+                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
                 embed.set_thumbnail(url=inter.guild.me.avatar.url)
                 await inter.send(embed=embed, ephemeral=True)
         else:
             embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            embed.set_footer(text=f"Requested by {inter.author}")
+            embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
             embed.set_thumbnail(url=inter.guild.me.avatar.url)
             await inter.send(embed=embed, ephemeral=True)
     except Exception as e:
@@ -768,17 +768,17 @@ async def unload(inter: disnake.ApplicationCommandInteraction, cog: str):
             try:
                 bot.unload_extension(f"cogs.{cog}")
                 embed = disnake.Embed(title="Success", description=f"Unloaded {cog}", color=config.Success())
-                embed.set_footer(text=f"Requested by {inter.author}")
+                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
                 embed.set_thumbnail(url=inter.guild.me.avatar.url)
                 await inter.send(embed=embed, ephemeral=True)
             except Exception as e:
                 embed = disnake.Embed(title="Error", description=f"Failed to unload {cog} because of {e}", color=config.Error())
-                embed.set_footer(text=f"Requested by {inter.author}")
+                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
                 embed.set_thumbnail(url=inter.guild.me.avatar.url)
                 await inter.send(embed=embed, ephemeral=True)
         else:
             embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            embed.set_footer(text=f"Requested by {inter.author}")
+            embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
             embed.set_thumbnail(url=inter.guild.me.avatar.url)
             await inter.send(embed=embed, ephemeral=True)
     except Exception as e:

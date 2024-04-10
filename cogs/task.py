@@ -73,7 +73,7 @@ class task(commands.Cog):
                         colour=config.Success(),
                         timestamp=datetime.datetime.now()
                     )
-                    embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}")
+                    embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
                     embedVar.set_image(url=config.abyss_header)
 
                     await channel.send(embed=embedVar)
@@ -95,7 +95,7 @@ class task(commands.Cog):
                         colour=config.Success(),
                         timestamp=datetime.datetime.now()
                     )
-                    embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}")
+                    embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
                     embedVar.set_image(url=config.abyss_header)
 
                     await channel.send(embed=embedVar)
@@ -147,7 +147,7 @@ class task(commands.Cog):
                                     timestamp=datetime.datetime.now())
                                 embedVar.add_field(name="<:block_star:1225801267893370961> Reward", value=f"> {reward.name}", inline=True)
                                 embedVar.add_field(name="<:block_star:1225801267893370961> Amount", value=f"> {reward.amount}x", inline=True)
-                                embedVar.set_footer(text=f"Bot Version: {config.version}")
+                                embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
                                 embedVar.set_thumbnail(
                                     url=reward.icon
                                 )
