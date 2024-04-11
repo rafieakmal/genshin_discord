@@ -63,11 +63,7 @@ class task_claim_codes(commands.Cog):
                             except genshin.AccountNotFound:
                                 continue
                             else:
-                                # send the message
-                                if code is None:
-                                    client_db.insert_one('users_claimed_code', {'user_id': user['user_id'], 'code': redeem_code})
-                                    continue
-                                
+                                # send the message                                
                                 embedVar = disnake.Embed(
                                     title="Your redeem code has been claimed!",
                                     colour=config.Success(),

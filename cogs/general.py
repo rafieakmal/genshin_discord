@@ -165,6 +165,20 @@ class general(commands.Cog):
             await inter.edit_original_response(content=f"Message sent to {channel.mention}")
         except Exception as e:
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
+
+    # add codes manually
+    @commands.slash_command(name='addcode', description='Add a redeem code manually')
+    async def addcode(self, inter: disnake.ApplicationCommandInteraction, code: str):
+        try:
+            if inter.author.id not in config.owner_ids:
+                return await inter.response.send_message("You need to have the `Bot Owner` role to use this command", ephemeral=True)
+            await inter.response.defer()
+            if code == None or code == "":
+                return await inter.edit_original_response("Please provide a redeem code")
+            client_db.insert_one('redeem_codes', {'code': code})
+            await inter.edit_original_response(content=f"Code `{code}` has been added successfully!")
+        except Exception as e:
+            await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
     
     @commands.slash_command(name='daily', description='Claims your daily reward')
     async def daily(self, inter: disnake.ApplicationCommandInteraction, action: str = commands.Param(choices=["genshin", "honkai impact 3rd", "honkai star rail"])):
