@@ -175,6 +175,8 @@ class general(commands.Cog):
             await inter.response.defer()
             if code == None or code == "":
                 return await inter.edit_original_response("Please provide a redeem code")
+            if client_db.find_one('redeem_codes', {'code': code}):
+                return await inter.edit_original_response("This code has already been added")
             client_db.insert_one('redeem_codes', {'code': code})
             await inter.edit_original_response(content=f"Code `{code}` has been added successfully!")
         except Exception as e:
