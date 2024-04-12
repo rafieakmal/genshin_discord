@@ -97,8 +97,7 @@ class task_daily(commands.Cog):
 
                         await self.bot.get_user(user['user_id']).send(embed=embedVar)
 
-            
-    @task_daily.before_loop
+    @daily_task.before_loop
     async def before_printer_rewards(self):
         print('Waiting to start daily task...')
         await self.bot.wait_until_ready()
