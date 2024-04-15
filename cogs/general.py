@@ -138,8 +138,9 @@ class general(commands.Cog):
     @commands.slash_command(name='broadcast', description='Broadcast a message to a channel')
     async def broadcast(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message: str):
         try:
-            if inter.author.id not in config.owner_ids:
-                return await inter.response.send_message("You need to have the `Bot Owner` role to use this command", ephemeral=True)
+            staff_ids = await client_db.get_staffs_in_server(inter.guild.id)
+            if inter.author.id not in config.owner_ids and inter.author.id not in staff_ids:
+                return await inter.response.send_message("You don't have the permission to use this command", ephemeral=True)
             await inter.response.defer()
             embedVar = disnake.Embed(
                 title="Hi Traveler!",
@@ -159,11 +160,27 @@ class general(commands.Cog):
     @commands.slash_command(name='say', description='Say a message to a channel')
     async def say(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message: str):
         try:
-            if inter.author.id not in config.owner_ids:
-                return await inter.response.send_message("You need to have the `Bot Owner` role to use this command", ephemeral=True)
+            staff_ids = await client_db.get_staffs_in_server(inter.guild.id)
+            if inter.author.id not in config.owner_ids and inter.author.id not in staff_ids:
+                return await inter.response.send_message("You don't have the permission to use this command", ephemeral=True)
             await inter.response.defer()
             await channel.send(message)
             await inter.edit_original_response(content=f"Message sent to {channel.mention}")
+        except Exception as e:
+            await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
+
+    @commands.slash_command(name='reply', description='Reply to a message in a channel')
+    async def reply(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message_id: str, message: str):
+        try:
+            staff_ids = await client_db.get_staffs_in_server(inter.guild.id)
+            if inter.author.id not in config.owner_ids and inter.author.id not in staff_ids:
+                return await inter.response.send_message("You don't have the permission to use this command", ephemeral=True)
+            await inter.response.defer()
+            message_to_reply = await channel.fetch_message(message_id)
+            if not message_to_reply:
+                return await inter.edit_original_response(content="Message not found.")
+            await message_to_reply.reply(message)
+            await inter.edit_original_response(content=f"Replied to the message in {channel.mention}")
         except Exception as e:
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
 
@@ -171,8 +188,9 @@ class general(commands.Cog):
     @commands.slash_command(name='addcode', description='Add a redeem code manually')
     async def addcode(self, inter: disnake.ApplicationCommandInteraction, code: str):
         try:
-            if inter.author.id not in config.owner_ids:
-                return await inter.response.send_message("You need to have the `Bot Owner` role to use this command", ephemeral=True)
+            staff_ids = await client_db.get_staffs_in_server(inter.guild.id)
+            if inter.author.id not in config.owner_ids and inter.author.id not in staff_ids:
+                return await inter.response.send_message("You don't have the permission to use this command", ephemeral=True)
             await inter.response.defer()
             if code == None or code == "":
                 return await inter.edit_original_response("Please provide a redeem code")
