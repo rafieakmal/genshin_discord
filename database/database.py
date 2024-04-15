@@ -43,3 +43,10 @@ class Database:
     def delete_all(self, collection_name):
         collection = self.get_collection(collection_name)
         return collection.delete_many({})
+    
+    async def get_staffs(self):
+        return self.find("staffs", {})
+    
+    async def get_staffs_in_server(self, server_id):
+        staff_ids = self.find("staffs", {"server_id": server_id})
+        return [staff['user_id'] for staff in staff_ids]
