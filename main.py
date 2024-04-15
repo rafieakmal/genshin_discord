@@ -516,6 +516,17 @@ async def ping(ctx):
         except Exception as e:
             await ctx.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
 
+
+@bot.command()
+async def say(ctx, channel: disnake.TextChannel, message: str):
+        try:
+            if ctx.author.id not in config.owner_ids:
+                return await ctx.send("You need to have the `Bot Owner` role to use this command")
+            await channel.send(message)
+            await ctx.send(content=f"Message sent to {channel.mention}")
+        except Exception as e:
+            await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
 @bot.command()
 async def reqabyssmaster(ctx, uid):
         try:
