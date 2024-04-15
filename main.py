@@ -14,12 +14,20 @@ import genshin
 import datetime
 from database.database import Database
 
+from requests_and_responses.evening import *
+from requests_and_responses.greeting import *
+from requests_and_responses.hobby import *
+from requests_and_responses.love import *
+from requests_and_responses.mean import *
+from requests_and_responses.morning import *
+from requests_and_responses.night import *
+from requests_and_responses.pervy import *
+from requests_and_responses.sad import *
+
 # Loading things from config
 import config
 
 client_db = Database()
-print(f"Connected to the database")
-
         
 # Setting up the bot
 bot = commands.Bot(
@@ -310,7 +318,7 @@ async def resetabyssdata(ctx, uid = None):
                 client_db.delete_many('users_claimed', {'server_id': ctx.guild.id})
                 return await ctx.send("Deleted all Abyss Master roles")
     except Exception as e:
-        print(f'Error sending help message: {e}')
+        (f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
         
 
@@ -345,7 +353,6 @@ async def resetabyssrole(ctx, member: disnake.Member):
                         embed = disnake.Embed(title="Error", description="No users have Abyss Master role!", color=config.Error())
                         await ctx.send(embed=embed)
     except Exception as e:
-        print(f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 @bot.command()
@@ -362,14 +369,10 @@ async def getexploration(ctx, uid):
             if not uid.isdigit():
                 return await ctx.send("Please provide a valid user id")
 
-            # cookies = {"ltuid_v2": 133197436, "ltoken_v2": "v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ"}
             cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
             client = genshin.Client(cookies)
-            print(client)
                     
             data_profile = await client.get_genshin_user(uid)
-
-            # print(data_profile.explorations)
 
             data_exploration = []
 
@@ -439,7 +442,6 @@ async def getexploration(ctx, uid):
 
             await ctx.send(embed=embed)
     except Exception as e:
-        print(f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 @bot.command()
@@ -455,7 +457,6 @@ async def setprefix(ctx, prefix):
         else:
             await ctx.send("You are not allowed to use this command!")
     except Exception as e:
-        print(f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 @bot.command()
@@ -501,7 +502,6 @@ async def menu(ctx):
             )
             await ctx.send(embed=embedVar)
     except Exception as e:
-        print(f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 @bot.command()
@@ -520,7 +520,7 @@ async def reqabyssmaster(ctx, uid):
             if len(uid) < 9 or len(uid) > 10:
                 return await ctx.send("Please provide a valid user id")
                 
-                # check if uid is a number
+            # check if uid is a number
             if not uid.isdigit():
                 return await ctx.send("Please provide a valid user id")
 
@@ -531,11 +531,8 @@ async def reqabyssmaster(ctx, uid):
                 
             cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
             client = genshin.Client(cookies)
-            # cookies = await client.login_with_password(config.email, config.password)
-            # {'cookie_token_v2': 'v2_CAQSDGM5b3FhcTNzM2d1OCD9062wBiiAhbKEBDD83ME_QgtiYnNfb3ZlcnNlYQ', 'account_mid_v2': '1izyx9ekyj_hy', 'account_id_v2': '133197436', 'ltoken_v2': 'v2_CAISDGM5b3FhcTNzM2d1OCD9062wBiig8KbvBjD83ME_QgtiYnNfb3ZlcnNlYQ', 'ltmid_v2': '1izyx9ekyj_hy', 'ltuid_v2': '133197436'}
                 
             data_abyss = await client.get_spiral_abyss(uid, previous=False)
-
 
             # request to https://enka.network/api/uid/
             async with aiohttp.ClientSession() as session:
@@ -575,13 +572,6 @@ async def reqabyssmaster(ctx, uid):
                         total_wins = data_abyss.total_wins
                             
                         message = ""
-                        # message += f"\n\n**User:** {player['nickname'] if player['nickname'] else 'None'}"
-                        # message += f"\n**Adventure Rank:** {player['level'] if player['level'] else 'None'}"
-                        # message += f"\n**World Level:** {player['worldLevel'] if player['worldLevel'] else 'None'}"
-                        # message += f"\n**Abyss Progress:** {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}"
-                        # message += f"\n**Abyss Stars Collected:** {total_stars} <:abyss_stars:1225579783660765195>"
-                        # message += f"\n**Battles Fought:** {total_battles}/{total_wins}"
-                        # message += f"\n**Total Retries:** {int(total_battles) - int(total_wins)}"
 
                         author = ctx.author
                             
@@ -591,10 +581,7 @@ async def reqabyssmaster(ctx, uid):
                             message += "\n> You are not on Floor 12, Chamber 3."
                             message += "\n> Please try again when you reach Floor 12, Chamber 3."
                             message += "\n> Thank you and good luck!"
-
                                 
-                            print(f"Total Stars: {total_stars}")
-
                             embedVar = disnake.Embed(
                                     title=f"{player['nickname'] if player['nickname'] else author}'s Info",
                                     colour=config.Error(),
@@ -615,8 +602,6 @@ async def reqabyssmaster(ctx, uid):
 
                             return await ctx.send(embed=embedVar)
                         else:
-                            print('User is on Floor 12, Chamber 3')
-                            print(f"Total Stars: {total_stars}")
                             if int(total_stars) == 36:
                                 message += "\n> Congratulations!"
                                 message += "\n> You have achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
@@ -624,7 +609,6 @@ async def reqabyssmaster(ctx, uid):
 
                                     # give user the Abyss Master role
                                 role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
-                                print(role)
                                 if role:
                                     try:
                                         member = await ctx.guild.fetch_member(author.id)
@@ -684,7 +668,6 @@ async def reqabyssmaster(ctx, uid):
                     else:
                         return await ctx.send("Error: Unable to fetch user info")
         except Exception as e:
-            print(f'Error sending userinfo message: {e}')
             return await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 # On Ready
@@ -695,12 +678,45 @@ async def on_ready():
     print(f"I am on {len(bot.guilds)} server")
     print(f'Running on {platform.system()} {platform.release()} ({os.name})')
     print(f'Bot Version: {config.version}')
-    print(f"Disnake version : {disnake.__version__}")
+    print(f"disnake version : {disnake.__version__}")
     print(f"Python version: {platform.python_version()}")
-    print('================== Loaded Cogs ================')
     status_task.start()
-    await asyncio.sleep(0.01)
-    print('===============================================')
+
+@bot.event
+async def on_message(message):
+    # Make sure the bot doesn't reply to itself
+    if message.author == bot.user:
+        return
+
+    msg = message.content.lower()
+
+    if any(msg == phrase for phrase in greeting_requests):
+        await message.channel.send(random.choice(greeting_responses))
+
+    elif any(msg == phrase for phrase in morning_requests):
+        await message.channel.send(random.choice(morning_responses))
+
+    elif any(msg == phrase for phrase in evening_requests):
+        await message.channel.send(random.choice(evening_responses))
+
+    elif any(msg == phrase for phrase in love_requests):
+        await message.channel.send(random.choice(love_responses))
+
+    elif any(msg == phrase for phrase in pervy_requests):
+        await message.channel.send(random.choice(pervy_responses))
+
+    elif any(msg == phrase for phrase in social_greeting):
+        await message.channel.send(random.choice(social_greeting_replies))
+
+    elif any(msg == phrase for phrase in sad_requests):
+        await message.channel.send(random.choice(encouraging_responses))
+
+    elif any(msg == phrase for phrase in mean_requests):
+        await message.channel.send(random.choice(mean_responses))
+
+    elif any(msg == phrase for phrase in hobby_requests):
+        await message.channel.send(random.choice(hobby_responses))
+
 
 # Status Task
 @tasks.loop(minutes=0.15)
@@ -711,78 +727,6 @@ async def status_task():
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
-
-# A slash command to reload cogs
-@bot.slash_command(name="reload", description="Reloads a cog")
-async def reload(inter: disnake.ApplicationCommandInteraction, cog: str):
-    try:
-        if inter.author.id in config.owner_ids:
-            try:
-                bot.reload_extension(f"cogs.{cog}")
-                embed = disnake.Embed(title="Success", description=f"Reloaded {cog}", color=config.Success())
-                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-                embed.set_thumbnail(url=inter.guild.me.avatar.url)
-                await inter.send(embed=embed, ephemeral=True)
-            except Exception as e:
-                embed = disnake.Embed(title="Error", description=f"Failed to reload {cog} because of {e}", color=config.Error())
-                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-                embed.set_thumbnail(url=inter.guild.me.avatar.url)
-                await inter.send(embed=embed, ephemeral=True)
-        else:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-            embed.set_thumbnail(url=inter.guild.me.avatar.url)
-            await inter.send(embed=embed, ephemeral=True)
-    except Exception as e:
-        print(f'An error occured while reloading a cog! {e}')
-
-# A slash command to load cogs
-@bot.slash_command(name="load", description="Loads a cog")
-async def load(inter: disnake.ApplicationCommandInteraction, cog: str):
-    try:
-        if inter.author.id in config.owner_ids:
-            try:
-                bot.load_extension(f"cogs.{cog}")
-                embed = disnake.Embed(title="Success", description=f"Loaded {cog}", color=config.Success())
-                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-                embed.set_thumbnail(url=inter.guild.me.avatar.url)
-                await inter.send(embed=embed, ephemeral=True)
-            except Exception as e:
-                embed = disnake.Embed(title="Error", description=f"Failed to load {cog} because of {e}", color=config.Error())
-                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-                embed.set_thumbnail(url=inter.guild.me.avatar.url)
-                await inter.send(embed=embed, ephemeral=True)
-        else:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-            embed.set_thumbnail(url=inter.guild.me.avatar.url)
-            await inter.send(embed=embed, ephemeral=True)
-    except Exception as e:
-        print(f'An error occured while loading a cog! {e}')
-
-# A slash command to unload cogs
-@bot.slash_command(name="unload", description="Unloads a cog")
-async def unload(inter: disnake.ApplicationCommandInteraction, cog: str):
-    try:
-        if inter.author.id in config.owner_ids:
-            try:
-                bot.unload_extension(f"cogs.{cog}")
-                embed = disnake.Embed(title="Success", description=f"Unloaded {cog}", color=config.Success())
-                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-                embed.set_thumbnail(url=inter.guild.me.avatar.url)
-                await inter.send(embed=embed, ephemeral=True)
-            except Exception as e:
-                embed = disnake.Embed(title="Error", description=f"Failed to unload {cog} because of {e}", color=config.Error())
-                embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-                embed.set_thumbnail(url=inter.guild.me.avatar.url)
-                await inter.send(embed=embed, ephemeral=True)
-        else:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            embed.set_footer(text=f"Requested by {inter.author}", icon_url=config.icon_url_front)
-            embed.set_thumbnail(url=inter.guild.me.avatar.url)
-            await inter.send(embed=embed, ephemeral=True)
-    except Exception as e:
-        print(f'An error occured while unloading a cog! {e}')
     
 # Run The Bot 
 bot.run(config.token, reconnect=True)

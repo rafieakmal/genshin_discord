@@ -1,8 +1,6 @@
 import pymongo, certifi
 import config
 
-# import the package globally
-
 class Database:
     _instance = None
 

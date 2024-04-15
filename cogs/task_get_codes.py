@@ -5,8 +5,6 @@ import aiohttp, asyncio
 
 # create a database object
 client_db = Database()
-print('Connected to the database')
-
 
 class task_get_codes(commands.Cog):
     def __init__(self, bot):
@@ -21,7 +19,6 @@ class task_get_codes(commands.Cog):
     @tasks.loop(minutes=1.0)
     async def get_codes(self):
          # request to retrieve the redeemable codes
-        print('Fetching redeem codes...')
         async with aiohttp.ClientSession() as session:
             async with session.get('https://hoyo-codes.vercel.app/codes?game=genshin') as response:
                 if response.status == 200:

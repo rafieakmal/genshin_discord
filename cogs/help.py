@@ -7,16 +7,11 @@ from database.database import Database
 import datetime
 
 client_db = Database()
-print("Connected to the database")
 
 class help(commands.Cog):
 
     def __init__(self, bot):
     	self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print(f'Loaded Cog Help')
 
             
     # Help Command with subcommands 

@@ -18,7 +18,6 @@ from disnake import TextInputStyle
 
 # Connecting to the database
 client_db = Database()
-print("Connected to the database")
 
 def restart_program():
     print("Restarting the program...")
@@ -52,7 +51,6 @@ class LoginModal(disnake.ui.Modal):
             author = inter.author
             await inter.response.send_message("Logging in...", ephemeral=True)
             last_message_id = await inter.original_response()
-            print(last_message_id)
 
             embed = disnake.Embed(title="HoYoLAB Login", color=0x00FF00)
             email = ""
@@ -69,7 +67,6 @@ class LoginModal(disnake.ui.Modal):
                 elif key == "password":
                     password += value
 
-            print(f"Email: {email} | Password: {password}")
             try:
                 client = genshin.Client()
                 port_randomize = random.randint(5000, 9000)
@@ -114,10 +111,6 @@ class login(commands.Cog):
     
     def __init__(self, bot):
     	self.bot = bot
-        
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print(f'Loaded Cog Login')
 
     # Ping Command
     @commands.slash_command(name='login', description='Login to HoYoLAB Server')
@@ -132,7 +125,6 @@ class login(commands.Cog):
             
             await inter.response.send_modal(LoginModal())
         except Exception as e:
-            print(f'Error Sending Ping Command: {e}')
             await inter.send(embed=errors.create_error_embed(f"{e}"))
                 
 def setup(bot):

@@ -5,7 +5,6 @@ import aiohttp, asyncio
 
 # create a database object
 client_db = Database()
-print('Connected to the database')
 
 class task_customm(commands.Cog):
     def __init__(self, bot):
@@ -34,8 +33,6 @@ class task_customm(commands.Cog):
         day_raw = time.strftime('%d', time.localtime(now))
         month_raw = time.strftime('%m', time.localtime(now))
         year_raw = time.strftime('%Y', time.localtime(now))
-
-        print(f'Current Thread 1 Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
 
         # if day raw equals to 1 and 16
         if day_raw in ('01', '16'):
