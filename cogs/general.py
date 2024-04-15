@@ -25,7 +25,9 @@ class general(commands.Cog):
     @commands.slash_command(name='ping', description='Get the bot\'s latency')
     async def ping(self, inter: disnake.ApplicationCommandInteraction):
         try:
-            embed = disnake.Embed(title=f"Pong!", description=f"The ping is around `{round(self.bot.latency * 1000)}ms`", color=config.Success())
+            message = f"Bot's latency: {round(self.bot.latency * 1000)}ms"
+            message += f"\nBot's websocket rate limited: {self.bot.is_ws_ratelimited()}"
+            embed = disnake.Embed(title="PONG!", description=message, color=config.Success())
             embed.set_footer(text=f'Command executed by {inter.author}', icon_url=inter.author.avatar.url)
             await inter.response.send_message(embed=embed)
         except Exception as e:
