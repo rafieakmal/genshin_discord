@@ -13,6 +13,7 @@ import aiohttp
 import genshin
 import datetime
 from database.database import Database
+import psutil
 
 from requests_and_responses.evening import *
 from requests_and_responses.greeting import *
@@ -31,7 +32,7 @@ client_db = Database()
         
 # Setting up the bot
 bot = commands.Bot(
-    command_prefix=config.prefix,
+    command_prefix=commands.when_mentioned_or(config.prefix),
     intents=disnake.Intents.all(),
     case_insensitive=True,
     owner_ids=config.owner_ids
@@ -597,13 +598,42 @@ async def menu(ctx):
 @bot.command()
 async def ping(ctx):
         try:
+            message = f"Bot's latency: {round(bot.latency * 1000)}ms"
+            message += f"\nBot's websocket rate limited: {bot.is_ws_ratelimited()}"
             embed = disnake.Embed(
-                title=f"Pong!", description=f"The ping is around `{round(bot.latency * 1000)}ms`", color=config.Success())
+                title=f"PONG!", description=message, color=config.Success())
             embed.set_footer(
                 text=f'Command executed by {ctx.author}', icon_url=ctx.author.avatar.url)
             await ctx.send(embed=embed)
         except Exception as e:
             await ctx.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
+
+@bot.command()
+async def system(ctx):
+    try:
+        uname = platform.uname()
+        cpu_usage = psutil.cpu_percent()
+        ram_usage = psutil.virtual_memory().percent
+
+        system_info = f"System: {uname.system}\n"
+        system_info += f"Node Name: {uname.node}\n"
+        system_info += f"Release: {uname.release}\n"
+        system_info += f"Version: {uname.version}\n"
+        system_info += f"Machine: {uname.machine}\n"
+        system_info += f"Processor: {uname.processor}\n"
+        system_info += f"CPU Usage: {cpu_usage}%\n"
+        system_info += f"RAM Usage: {ram_usage}%"
+
+        embed = disnake.Embed(
+            title="System", description=f"```{system_info}```", color=config.Success())
+        embed.set_footer(
+            text=f'Command executed by {ctx.author}', icon_url=ctx.author.avatar.url)
+        await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
+        
+
 
 
 @bot.command()
