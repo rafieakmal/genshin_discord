@@ -375,7 +375,11 @@ async def resetabyssdata(ctx, uid = None):
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
-        if ctx.author.id in config.owner_ids and ctx.author.id in staff_ids:
+        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
+            embed = disnake.Embed(
+                title="Error", description="You are not allowed to use this command!", color=config.Error())
+            await ctx.send(embed=embed)
+        else:
             if uid != None:
                 # check uid length must be between 9 and 10
                 if len(uid) < 9 or len(uid) > 10:
@@ -406,7 +410,11 @@ async def resetabyssrole(ctx, member: disnake.Member):
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
-        if ctx.author.id in config.owner_ids and ctx.author.id in staff_ids:
+        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
+            embed = disnake.Embed(
+                title="Error", description="You are not allowed to use this command!", color=config.Error())
+            await ctx.send(embed=embed)
+        else:
             if member:
                 role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
                 if role:
