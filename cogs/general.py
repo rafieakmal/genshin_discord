@@ -27,7 +27,7 @@ class general(commands.Cog):
         try:
             embed = disnake.Embed(title=f"Pong!", description=f"The ping is around `{round(self.bot.latency * 1000)}ms`", color=config.Success())
             embed.set_footer(text=f'Command executed by {inter.author}', icon_url=inter.author.avatar.url)
-            await inter.response.send_message(ephemeral=True, embed=embed)
+            await inter.response.send_message(embed=embed)
         except Exception as e:
             await inter.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
 
@@ -152,6 +152,17 @@ class general(commands.Cog):
             )
             embedVar.set_footer(text=f"Bot Version: {config.version}", icon_url=config.icon_url_front)
             await channel.send(embed=embedVar)
+            await inter.edit_original_response(content=f"Message sent to {channel.mention}")
+        except Exception as e:
+            await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
+    
+    @commands.slash_command(name='say', description='Say a message to a channel')
+    async def say(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message: str):
+        try:
+            if inter.author.id not in config.owner_ids:
+                return await inter.response.send_message("You need to have the `Bot Owner` role to use this command", ephemeral=True)
+            await inter.response.defer()
+            await channel.send(message)
             await inter.edit_original_response(content=f"Message sent to {channel.mention}")
         except Exception as e:
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
