@@ -15,16 +15,11 @@ import datetime
 
 # Connecting to the database
 client_db = Database()
-print("Connected to the database")
 
 class general(commands.Cog):
     
     def __init__(self, bot):
     	self.bot = bot
-        
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print(f'Loaded Cog General')
 
     # Ping Command
     @commands.slash_command(name='ping', description='Get the bot\'s latency')
@@ -34,7 +29,6 @@ class general(commands.Cog):
             embed.set_footer(text=f'Command executed by {inter.author}', icon_url=inter.author.avatar.url)
             await inter.response.send_message(ephemeral=True, embed=embed)
         except Exception as e:
-            print(f'Error Sending Ping Command: {e}')
             await inter.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
 
     @commands.slash_command(name='getexploration', description='Get the exploration progress of a user')
@@ -68,11 +62,8 @@ class general(commands.Cog):
                 cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
 
             client = genshin.Client(cookies)
-            print(client)
                     
             data_profile = await client.get_genshin_user(uid)
-
-            # print(data_profile.explorations)
 
             data_exploration = []
 
@@ -142,7 +133,6 @@ class general(commands.Cog):
 
             await inter.edit_original_response(embed=embed)
         except Exception as e:
-            print(f'Error sending help message: {e}')
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
 
     @commands.slash_command(name='broadcast', description='Broadcast a message to a channel')
@@ -201,8 +191,6 @@ class general(commands.Cog):
                     "ltmid_v2": user['ltmid'],
                 }
 
-                print(cookies)
-
                 # get the client
                 client = genshin.Client(debug=True)
                 client.set_cookies(cookies)
@@ -213,13 +201,9 @@ class general(commands.Cog):
                 elif action == "honkai star rail":
                     client.default_game = genshin.Game.STARRAIL
 
-                print(client)
-
                 # get the daily check-in
 
                 signed_in, claimed_rewards = await client.get_reward_info()
-
-                print(signed_in, claimed_rewards)
 
                 if signed_in:
                     await inter.edit_original_response(content="You have already claimed your daily reward!")
@@ -276,7 +260,6 @@ class general(commands.Cog):
             # check if uid registered in the database
             user = client_db.find_one('users_claimed', {'uid': uid, 'server_id': inter.guild.id})
             if user:
-                print('User has already claimed Abyss Master role')
                 return await inter.edit_original_response("This user has already claimed the Abyss Master role")
                 
             user_logged_in = client_db.find_one('users', {'user_id': inter.author.id})
@@ -293,11 +276,7 @@ class general(commands.Cog):
                 cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
 
             client = genshin.Client(cookies)
-            print(client)
-                    
             data_abyss = await client.get_spiral_abyss(uid, previous=False)
-
-            print(data_abyss)
 
             # request to https://enka.network/api/uid/
             async with aiohttp.ClientSession() as session:
@@ -342,7 +321,6 @@ class general(commands.Cog):
                                 
                         # check if floor isn't 12 and chamber isn't 3
                         if int(player['towerFloorIndex']) != 12 or int(player['towerLevelIndex']) != 3:
-                            # print('User is not on Floor 12, Chamber 3')
                             message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
                             message += "\n> You are not on Floor 12, Chamber 3."
                             message += "\n> Please try again when you reach Floor 12, Chamber 3."
@@ -351,14 +329,12 @@ class general(commands.Cog):
                             is_error = True
                         else:
                             if int(total_stars) == 36:
-                                # print('User has 9 stars')
                                 message += "\n> Congratulations!"
                                 message += "\n> You have achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
                                 message += "\n> You are eligible for Abyss Master role!"
 
                                 # give user the Abyss Master role
                                 role = disnake.utils.get(inter.guild.roles, name='Abyss Master')
-                                print(role)
                                 if role:
                                     try:
                                         member = await inter.guild.fetch_member(author.id)
@@ -372,7 +348,6 @@ class general(commands.Cog):
 
                                     is_error = False
                                 else:
-                                    # print('User has less than 9 stars')
                                     message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
                                     message += "\n> You have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
                                     message += "\n> You are not eligible for Abyss Master role!"
@@ -424,7 +399,6 @@ class general(commands.Cog):
                     else:
                         await inter.edit_original_response(content="Unable to fetch user info")
         except Exception as e:
-            # print(f'Error sending userinfo message: {e}')
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
 
 
@@ -438,7 +412,6 @@ class general(commands.Cog):
             embed.set_footer(text=f'Requested by {inter.author}', icon_url=config.icon_url_front)
             await inter.response.send_message(embed=embed)
         except Exception as e:
-            print(f'Error sending invite message: {e}')
             await inter.send(embed=errors.create_error_embed(f"Error sending invite command: {e}"))
                 
 def setup(bot):

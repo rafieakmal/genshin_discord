@@ -5,7 +5,6 @@ import aiohttp, asyncio
 
 # create a database object
 client_db = Database()
-print('Connected to the database')
 
 class task_claim_codes(commands.Cog):
     def __init__(self, bot):
@@ -20,7 +19,6 @@ class task_claim_codes(commands.Cog):
     @tasks.loop(seconds=10)
     async def claim_codes(self):
         # get the user
-        print('Claiming redeem codes...')
         users = client_db.find('users', {})
         if users:
             for user in users:

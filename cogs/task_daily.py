@@ -5,7 +5,6 @@ import aiohttp, asyncio
 
 # create a database object
 client_db = Database()
-print('Connected to the database')
 
 class task_daily(commands.Cog):
     def __init__(self, bot):
@@ -35,10 +34,6 @@ class task_daily(commands.Cog):
         month_raw = time.strftime('%m', time.localtime(now))
         year_raw = time.strftime('%Y', time.localtime(now))
 
-        # print(f'Current Thread 1 Running: {current_time} | {date} | {day} | {month} | {year} | {day_raw} | {month_raw} | {year_raw}')
-
-        # if day raw equals to 1 and 16
-        
         if current_time == '23:01:00':
             # get all users token
             users = client_db.find('users', {})
@@ -53,21 +48,13 @@ class task_daily(commands.Cog):
                         "ltmid_v2": user['ltmid'],
                     }
 
-                    print(cookies)
-
                     # get the client
                     client = genshin.Client(debug=True)
                     client.set_cookies(cookies)
                     client.default_game = genshin.Game.GENSHIN
 
-                    print(client)
-
                      # get the daily check-in
-
                     signed_in, claimed_rewards = await client.get_reward_info()
-
-                    print(signed_in, claimed_rewards)
-
                     if signed_in:
                         pass
 
@@ -97,8 +84,7 @@ class task_daily(commands.Cog):
 
                         await self.bot.get_user(user['user_id']).send(embed=embedVar)
 
-            
-    @task_daily.before_loop
+    @daily_task.before_loop
     async def before_printer_rewards(self):
         print('Waiting to start daily task...')
         await self.bot.wait_until_ready()

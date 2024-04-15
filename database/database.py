@@ -2,13 +2,19 @@ import pymongo, certifi
 import config
 
 class Database:
-    def __init__(self):
-        connection_string = config.mongo
-        self.client = pymongo.MongoClient(connection_string, tlsCAFile=certifi.where())
-        self.db = self.client['genshinindo']
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            connection_string = config.mongo
+            cls._instance = super().__new__(cls)
+            cls._instance.client = pymongo.MongoClient(
+                connection_string, tlsCAFile=certifi.where())
+            cls._instance.db = cls._instance.client['genshinindo']
+        return cls._instance
 
     def get_collection(self, collection_name):
-        return self.db[collection_name]
+        return self._instance.db[collection_name]
 
     def insert_one(self, collection_name, document):
         collection = self.get_collection(collection_name)
