@@ -504,6 +504,18 @@ async def menu(ctx):
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
+
+@bot.command()
+async def ping(ctx):
+        try:
+            embed = disnake.Embed(
+                title=f"Pong!", description=f"The ping is around `{round(bot.latency * 1000)}ms`", color=config.Success())
+            embed.set_footer(
+                text=f'Command executed by {ctx.author}', icon_url=ctx.author.avatar.url)
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
+
 @bot.command()
 async def reqabyssmaster(ctx, uid):
         try:
@@ -716,6 +728,8 @@ async def on_message(message):
 
     elif any(msg == phrase for phrase in hobby_requests):
         await message.channel.send(random.choice(hobby_responses))
+    else:
+        await bot.process_commands(message)
 
 
 # Status Task
