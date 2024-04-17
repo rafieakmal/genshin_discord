@@ -37,7 +37,7 @@ class task_customm(commands.Cog):
         # if day raw equals to 1 and 16
         if day_raw in ('01', '16'):
             # time must be 03:00:00
-            if current_time == '03:00:00':
+            if current_time == '03:01:01':
                 # get members in the role of the guild id=1051526111135272990
                 guild = self.bot.get_guild(config.guild)
                 

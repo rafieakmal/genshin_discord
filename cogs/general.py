@@ -26,7 +26,7 @@ class general(commands.Cog):
     async def ping(self, inter: disnake.ApplicationCommandInteraction):
         try:
             message = f"Websocket's latency: {round(self.bot.latency * 1000)}ms"
-            message += f"\Websocket's rate limited: {self.bot.is_ws_ratelimited()}"
+            message += f"\nWebsocket's rate limited: {self.bot.is_ws_ratelimited()}"
             embed = disnake.Embed(title="PONG!", description=message, color=config.Success())
             embed.set_footer(text=f'Command executed by {inter.author}', icon_url=inter.author.avatar.url)
             await inter.response.send_message(embed=embed)
