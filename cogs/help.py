@@ -18,7 +18,7 @@ class help(commands.Cog):
     @commands.slash_command(name="menu", description="Shows the help command")
     async def menu(inter: disnake.ApplicationCommandInteraction, action: str = commands.Param(choices=["general"])):
         try:
-            whitelisted = client_db.find_one("whitelists", {"channel_id": inter.channel.id})
+            whitelisted = await client_db.find_one("whitelists", {"channel_id": inter.channel.id})
             if not whitelisted:
                 return await inter.response.send_message("This command is disabled in this channel", ephemeral=True)
                 
