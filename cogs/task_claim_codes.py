@@ -85,9 +85,9 @@ class task_claim_codes(commands.Cog):
             await asyncio.sleep(1)  # sleep for 1s
             await kwargs['client'].redeem_code(kwargs['redeem_code'])
         except genshin.RedemptionException:
-            await client_db.insert_one('users_claimed_code', {'user_id': kwargs['user']['user_id'], 'code': kwargs['redeem_code']})
+            await self.handle_error_code(user=kwargs['user'], redeem_code=kwargs['redeem_code'])
         except genshin.AccountNotFound:
-            return
+            await self.notify_account_not_found(user=kwargs['user'])
         except genshin.InvalidCookies:
             await self.notify_invalid_cookies(user=kwargs['user'])
         else:
@@ -126,7 +126,31 @@ class task_claim_codes(commands.Cog):
         )
         embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
 
-        await self.bot.get_user(kwargs['user']['user_id']).send(embed=embedVar)
+        return await self.bot.get_user(kwargs['user']['user_id']).send(embed=embedVar)
+
+    async def notify_account_not_found(self, **kwargs):
+        """
+        Notify the user that the account is not found
+        """
+        await client_db.delete_one('users', {'user_id': kwargs['user']['user_id']})
+
+        embedVar = disnake.Embed(
+            title="Dear user",
+            colour=config.Error(),
+            timestamp=datetime.datetime.now()
+        )
+        embedVar.add_field(name="<:block_star:1225801267893370961> Message", value="> We apologize, but we cannot find your account. Please ensure that you have the correct account. If you have any questions, please contact our support team. Thank you", inline=False)
+        embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
+
+        return await self.bot.get_user(kwargs['user']['user_id']).send(embed=embedVar)
+    
+    async def handle_error_code(self, **kwargs):
+        """
+        Handle the error code
+        """
+        return await client_db.insert_one('users_claimed_code', {'user_id': kwargs['user']['user_id'], 'code': kwargs['redeem_code']})
+
+
 
     @claim_codes.before_loop
     async def before_printer_claim_codes(self) -> None:
@@ -134,7 +158,7 @@ class task_claim_codes(commands.Cog):
         Wait until the bot is ready
         """
         print('Waiting to start getting redeem codes...')
-        await self.bot.wait_until_ready()
+        return await self.bot.wait_until_ready()
 
 def setup(bot):
     bot.add_cog(task_claim_codes(bot))
