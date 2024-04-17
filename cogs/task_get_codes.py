@@ -26,10 +26,10 @@ class task_get_codes(commands.Cog):
                     if 'codes' in data:
                         # insert to database
                         for code in data['codes']:
-                            if client_db.find_one('redeem_codes', {'code': code}):
+                            if await client_db.find_one('redeem_codes', {'code': code}):
                                 pass
                             else:
-                                client_db.insert_one('redeem_codes', {'code': code})
+                                await client_db.insert_one('redeem_codes', {'code': code})
                 else:
                     print('Failed to fetch data')
     

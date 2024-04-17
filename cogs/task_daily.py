@@ -36,7 +36,7 @@ class task_daily(commands.Cog):
 
         if current_time == '23:01:00':
             # get all users token
-            users = client_db.find('users', {})
+            users = await client_db.find('users', {})
             if users:
                 for user in users:
                     cookies = {

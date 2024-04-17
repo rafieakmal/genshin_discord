@@ -25,8 +25,8 @@ class general(commands.Cog):
     @commands.slash_command(name='ping', description='Get the bot\'s latency')
     async def ping(self, inter: disnake.ApplicationCommandInteraction):
         try:
-            message = f"Bot's latency: {round(self.bot.latency * 1000)}ms"
-            message += f"\nBot's websocket rate limited: {self.bot.is_ws_ratelimited()}"
+            message = f"Websocket's latency: {round(self.bot.latency * 1000)}ms"
+            message += f"\Websocket's rate limited: {self.bot.is_ws_ratelimited()}"
             embed = disnake.Embed(title="PONG!", description=message, color=config.Success())
             embed.set_footer(text=f'Command executed by {inter.author}', icon_url=inter.author.avatar.url)
             await inter.response.send_message(embed=embed)
@@ -50,7 +50,7 @@ class general(commands.Cog):
                 await inter.edit_original_response("Please provide a valid user id")
 
 
-            user_logged_in = client_db.find_one('users', {'user_id': inter.author.id})
+            user_logged_in = await client_db.find_one('users', {'user_id': inter.author.id})
             if user_logged_in:
                 cookies = {
                     "ltuid_v2": user_logged_in['ltuid'],
@@ -196,9 +196,9 @@ class general(commands.Cog):
             await inter.response.defer()
             if code == None or code == "":
                 return await inter.edit_original_response("Please provide a redeem code")
-            if client_db.find_one('redeem_codes', {'code': code}):
+            if await client_db.find_one('redeem_codes', {'code': code}):
                 return await inter.edit_original_response("This code has already been added")
-            client_db.insert_one('redeem_codes', {'code': code})
+            await client_db.insert_one('redeem_codes', {'code': code})
             await inter.edit_original_response(content=f"Code `{code}` has been added successfully!")
         except Exception as e:
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
@@ -211,7 +211,7 @@ class general(commands.Cog):
             await inter.response.defer()
             await asyncio.sleep(3)
             # check if user has already claimed the daily reward
-            user = client_db.find_one('users', {'user_id': author.id})
+            user = await client_db.find_one('users', {'user_id': author.id})
             if user:
                 cookies = {
                     "ltuid_v2": user['ltuid'],
@@ -272,7 +272,7 @@ class general(commands.Cog):
             is_error = False
 
             # check channel is whitelisted
-            whitelist = client_db.find_one('whitelists', {'channel_id': inter.channel.id})
+            whitelist = await client_db.find_one('whitelists', {'channel_id': inter.channel.id})
             if not whitelist:
                 return
             
@@ -289,11 +289,11 @@ class general(commands.Cog):
                 return await inter.edit_original_response("Please provide a valid user id")
 
             # check if uid registered in the database
-            user = client_db.find_one('users_claimed', {'uid': uid, 'server_id': inter.guild.id})
+            user = await client_db.find_one('users_claimed', {'uid': uid, 'server_id': inter.guild.id})
             if user:
                 return await inter.edit_original_response("This user has already claimed the Abyss Master role")
                 
-            user_logged_in = client_db.find_one('users', {'user_id': inter.author.id})
+            user_logged_in = await client_db.find_one('users', {'user_id': inter.author.id})
             if user_logged_in:
                 cookies = {
                     "ltuid_v2": user_logged_in['ltuid'],
@@ -375,17 +375,17 @@ class general(commands.Cog):
                                         await inter.edit_original_response(content="Unable to add Abyss Master role to user")
                                         
                                     # add the user to the database
-                                    client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': inter.guild.id})
+                                    await client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': inter.guild.id})
 
                                     is_error = False
-                                else:
-                                    message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
-                                    message += "\n> You have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
-                                    message += "\n> You are not eligible for Abyss Master role!"
-                                    message += "\n> Please try again when you reach 36 <:abyss_stars:1225579783660765195>!"
-                                    message += "\n> Thank you and good luck!"
+                            else:
+                                message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
+                                message += "\n> You have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
+                                message += "\n> You are not eligible for Abyss Master role!"
+                                message += "\n> Please try again when you reach 36 <:abyss_stars:1225579783660765195>!"
+                                message += "\n> Thank you and good luck!"
 
-                                    is_error = True
+                                is_error = True
                             
                         if is_error:
                             embedVar = disnake.Embed(

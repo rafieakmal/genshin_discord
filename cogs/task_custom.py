@@ -53,7 +53,7 @@ class task_customm(commands.Cog):
                         await member.remove_roles(role)
                     
                     # delete all users from the database
-                    client_db.delete_many('users_claimed', {})
+                    await client_db.delete_many('users_claimed', {})
                     
                     # get the channel
                     channel = self.bot.get_channel(config.broadcast_channel)
@@ -77,7 +77,7 @@ class task_customm(commands.Cog):
 
                     await channel.send(embed=embedVar)
                 else:
-                    client_db.delete_many('users_claimed', {})
+                    await client_db.delete_many('users_claimed', {})
 
                     channel = self.bot.get_channel(config.broadcast_channel)
                     
