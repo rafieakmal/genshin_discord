@@ -597,16 +597,16 @@ async def menu(ctx):
 
 @bot.command()
 async def ping(ctx):
-        try:
-            message = f"Bot's latency: {round(bot.latency * 1000)}ms"
-            message += f"\nBot's websocket rate limited: {bot.is_ws_ratelimited()}"
-            embed = disnake.Embed(
-                title=f"PONG!", description=message, color=config.Success())
-            embed.set_footer(
-                text=f'Command executed by {ctx.author}', icon_url=ctx.author.avatar.url)
-            await ctx.send(embed=embed)
-        except Exception as e:
-            await ctx.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
+    try:
+        message = f"Websocket's latency: {round(bot.latency * 1000)}ms"
+        message += f"\nWebsocket's rate limited: {bot.is_ws_ratelimited()}"
+        embed = disnake.Embed(
+            title=f"PONG!", description=message, color=config.Success())
+        embed.set_footer(
+            text=f'Command executed by {ctx.author}', icon_url=ctx.author.avatar.url)
+        await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
 
 @bot.command()
 async def system(ctx):
