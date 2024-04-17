@@ -48,7 +48,7 @@ async def whitelistadd(ctx, channel: disnake.TextChannel):
                 title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
             
-        channel_id = client_db.find_one(
+        channel_id = await client_db.find_one(
             'whitelists', {'channel_id': channel.id})
 
         # check if the channel is already whitelisted
@@ -59,7 +59,7 @@ async def whitelistadd(ctx, channel: disnake.TextChannel):
             return
 
         # insert the channel id to mongodb
-        client_db.insert_one(
+        await client_db.insert_one(
             'whitelists', {'server_id': ctx.guild.id, 'channel_id': channel.id})
         embed = disnake.Embed(
             title="Success", description=f"Whitelisted the channel {channel.mention}!", color=config.Success())
@@ -74,7 +74,7 @@ async def staffadd(ctx, member: disnake.Member):
     try:
         if ctx.author.id in config.owner_ids:
             # get the channel id from mongodb
-            user_id = client_db.find_one(
+            user_id = await client_db.find_one(
                 'staffs', {'user_id': member.id})
 
             # check if the channel is already whitelisted
@@ -85,7 +85,7 @@ async def staffadd(ctx, member: disnake.Member):
                 return
 
             # insert the channel id to mongodb
-            client_db.insert_one(
+            await client_db.insert_one(
                 'staffs', {'server_id': ctx.guild.id, 'user_id': member.id})
             embed = disnake.Embed(
                 title="Success", description=f"Added {member.mention} as a staff member!", color=config.Success())
@@ -104,7 +104,7 @@ async def staffdel(ctx, member: disnake.Member):
     try:
         if ctx.author.id in config.owner_ids:
             # check if the user is a staff member
-            user_id = client_db.find_one('staffs', {'user_id': member.id})
+            user_id = await client_db.find_one('staffs', {'user_id': member.id})
             if not user_id:
                 embed = disnake.Embed(
                     title="Error", description="This user is not a staff member!", color=config.Error())
@@ -112,7 +112,7 @@ async def staffdel(ctx, member: disnake.Member):
                 return
 
             # delete the user from staffs collection
-            client_db.delete_one('staffs', {'user_id': member.id})
+            await client_db.delete_one('staffs', {'user_id': member.id})
             embed = disnake.Embed(
                 title="Success", description=f"Removed {member.mention} from staff members!", color=config.Success())
             await ctx.send(embed=embed)
@@ -136,7 +136,7 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
             await ctx.send(embed=embed)
         
         # get the channel id from mongodb
-        channel_id = client_db.find_one(
+        channel_id = await client_db.find_one(
             'blacklists', {'channel_id': channel.id})
 
         # check if the channel is already blacklisted
@@ -147,7 +147,7 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
             return
 
         # delete the channel id from mongodb
-        client_db.delete_one('whitelists', {'channel_id': channel.id})
+        await client_db.delete_one('whitelists', {'channel_id': channel.id})
         embed = disnake.Embed(
             title="Success", description=f"Denylisted the channel {channel.mention}!", color=config.Success())
         await ctx.send(embed=embed)
@@ -166,7 +166,7 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
             await ctx.send(embed=embed)
         
         # get the channel id from mongodb
-        channel_id = client_db.find_one(
+        channel_id = await client_db.find_one(
             'whitelists', {'channel_id': channel.id})
 
         # check if the channel is already whitelisted
@@ -177,7 +177,7 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
             return
 
         # delete the channel id from mongodb
-        client_db.delete_one('whitelists', {'channel_id': channel.id})
+        await client_db.delete_one('whitelists', {'channel_id': channel.id})
         embed = disnake.Embed(
             title="Success", description=f"Removed the channel {channel.mention} from the whitelist!", color=config.Success())
         await ctx.send(embed=embed)
@@ -195,7 +195,7 @@ async def denylistdel(ctx, channel: disnake.TextChannel):
             await ctx.send(embed=embed)
 
         # get the channel id from mongodb
-        channel_id = client_db.find_one(
+        channel_id = await client_db.find_one(
             'blacklists', {'channel_id': channel.id})
 
         # check if the channel is already blacklisted
@@ -206,7 +206,7 @@ async def denylistdel(ctx, channel: disnake.TextChannel):
             return
 
         # delete the channel id from mongodb
-        client_db.delete_one('blacklists', {'channel_id': channel.id})
+        await client_db.delete_one('blacklists', {'channel_id': channel.id})
         embed = disnake.Embed(
             title="Success", description=f"Removed the channel {channel.mention} from the blacklist!", color=config.Success())
         await ctx.send(embed=embed)
@@ -219,11 +219,11 @@ async def restrictmode(ctx, status: str):
     try:
         if ctx.author.id in config.owner_ids:
             if status.lower() == "on":
-                client_db.insert_one('restrictmode', {'server_id': ctx.guild.id, 'status': 'on'})
+                await client_db.insert_one('restrictmode', {'server_id': ctx.guild.id, 'status': 'on'})
                 embed = disnake.Embed(title="Success", description="Restricted mode is now enabled!", color=config.Success())
                 await ctx.send(embed=embed)
             elif status.lower() == "off":
-                client_db.update_one('restrictmode', {'server_id': ctx.guild.id}, {'$set': {'status': 'off'}})
+                await client_db.update_one('restrictmode', {'server_id': ctx.guild.id}, {'$set': {'status': 'off'}})
                 embed = disnake.Embed(title="Success", description="Restricted mode is now disabled!", color=config.Success())
                 await ctx.send(embed=embed)
             else:
@@ -283,7 +283,7 @@ async def getwhitelist(ctx):
                 title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
         else:
-            whitelist = client_db.find(
+            whitelist = await client_db.find(
                 'whitelists', {'server_id': ctx.guild.id})
             if whitelist:
                 # tag the channel
@@ -313,7 +313,7 @@ async def getclaimedusers(ctx):
                 title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
         else:
-            users = client_db.find(
+            users = await client_db.find(
                 'users_claimed', {'server_id': ctx.guild.id})
             if users:
                 # tag the user
@@ -391,15 +391,15 @@ async def resetabyssdata(ctx, uid = None):
                     return await ctx.send("Please provide a valid user id")
                     
                 # check if uid registered in the database
-                user = client_db.find_one('users_claimed', {'uid': uid})
+                user = await client_db.find_one('users_claimed', {'uid': uid})
                 if user:
-                    client_db.delete_one('users_claimed', {'uid': uid})
+                    await client_db.delete_one('users_claimed', {'uid': uid})
                     return await ctx.send(f"Deleted the Abyss Master role for user with id: {uid}")
                 else:
                     return await ctx.send(f"User with id: {uid} has not claimed the Abyss Master role")
             else:
                 # delete all users from the database with server id
-                client_db.delete_many('users_claimed', {'server_id': ctx.guild.id})
+                await client_db.delete_many('users_claimed', {'server_id': ctx.guild.id})
                 return await ctx.send("Deleted all Abyss Master roles")
     except Exception as e:
         (f'Error sending help message: {e}')
@@ -553,10 +553,10 @@ async def setprefix(ctx, prefix):
 async def menu(ctx):
     try:
         # if current server is restricted
-        restricted = client_db.find_one('restrictmode', {'server_id': ctx.guild.id})
+        restricted = await client_db.find_one('restrictmode', {'server_id': ctx.guild.id})
         if restricted and restricted['status'] == 'on':
             # check channel is whitelisted
-            whitelist = client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
+            whitelist = await client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
             if not whitelist:
                 return
             
@@ -575,7 +575,7 @@ async def menu(ctx):
             await ctx.send(embed=embedVar)
         else:
             # check channel is whitelisted
-            whitelist = client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
+            whitelist = await client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
             if not whitelist:
                 return
             
@@ -669,7 +669,7 @@ async def reply(ctx, channel: disnake.TextChannel, message_id: str, *, message: 
 async def reqabyssmaster(ctx, uid):
         try:
             # check channel is whitelisted
-            whitelist = client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
+            whitelist = await client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
             if not whitelist:
                 return
 
@@ -686,7 +686,7 @@ async def reqabyssmaster(ctx, uid):
                 return await ctx.send("Please provide a valid user id")
 
             # check if uid registered in the database
-            user = client_db.find_one('users_claimed', {'uid': uid, 'server_id': ctx.guild.id})
+            user = await client_db.find_one('users_claimed', {'uid': uid, 'server_id': ctx.guild.id})
             if user:
                 return await ctx.send("This user has already claimed the Abyss Master role")
                 
@@ -778,7 +778,7 @@ async def reqabyssmaster(ctx, uid):
                                         print(f'Error adding role to member: {e}')
                                     
                                     # add the user to the database
-                                    client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': ctx.guild.id})
+                                    await client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': ctx.guild.id})
 
                                     embedVar = disnake.Embed(
                                         title=f"{player['nickname'] if player['nickname'] else author}'s Info",
