@@ -43,12 +43,12 @@ class task_claim_codes(commands.Cog):
         Get the user cookies
         """
         return {
-            "ltuid_v2": kwargs['user']['ltuid'],
-            "ltoken_v2": kwargs['user']['ltoken'],
-            "cookie_token_v2": kwargs['user']['cookie_token'],
-            "account_id_v2": kwargs['user']['account_id'],
-            "account_mid_v2": kwargs['user']['account_mid'],
-            "ltmid_v2": kwargs['user']['ltmid'],
+            "ltuid_v2": kwargs['user']['ltuid_v2'],
+            "ltoken_v2": kwargs['user']['ltoken_v2'],
+            "cookie_token_v2": kwargs['user']['cookie_token_v2'],
+            "account_id_v2": kwargs['user']['account_id_v2'],
+            "account_mid_v2": kwargs['user']['account_mid_v2'],
+            "ltmid_v2": kwargs['user']['ltmid_v2'],
         }
 
     def get_genshin_client(self, **kwargs):
@@ -66,9 +66,8 @@ class task_claim_codes(commands.Cog):
         """
         redeem_codes = await client_db.find('redeem_codes', {})
         if redeem_codes:
-            all_redeem_codes = [redeem_code['code'] for redeem_code in redeem_codes]
-            all_claimed_codes = [claimed_code['code'] for claimed_code in await client_db.find('users_claimed_code', {'user_id': kwargs['user']['user_id']})]
-            filtered_redeem_codes = [code for code in all_redeem_codes if code not in all_claimed_codes]
+            all_claimed_codes_set = set(claimed_code['code'] for claimed_code in await client_db.find('users_claimed_code', {'user_id': kwargs['user']['user_id']}))
+            filtered_redeem_codes = [redeem_code['code'] for redeem_code in redeem_codes if redeem_code['code'] not in all_claimed_codes_set]
 
             if filtered_redeem_codes:
                 for redeem_code in filtered_redeem_codes:

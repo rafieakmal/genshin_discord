@@ -11,16 +11,16 @@ client_db = Database()
 class help(commands.Cog):
 
     def __init__(self, bot):
-    	self.bot = bot
+        self.bot = bot
 
-            
     # Help Command with subcommands 
     @commands.slash_command(name="menu", description="Shows the help command")
-    async def menu(inter: disnake.ApplicationCommandInteraction, action: str = commands.Param(choices=["general"])):
+    async def menu(self, inter: disnake.ApplicationCommandInteraction, action: str = commands.Param(choices=["general"])):
         try:
-            whitelisted = await client_db.find_one("whitelists", {"channel_id": inter.channel.id})
+            channel_id = inter.channel_id if inter.channel else inter.user.id
+            whitelisted = await client_db.find_one("whitelists", {"channel_id": channel_id})
             if not whitelisted:
-                return await inter.response.send_message("This command is disabled in this channel", ephemeral=True)
+                return await inter.response.send_message("This command is disabled in this channel or DM", ephemeral=True)
                 
             if action == "general":
                 embedVar = disnake.Embed(
@@ -38,7 +38,7 @@ class help(commands.Cog):
                 await inter.response.send_message(embed=embedVar, ephemeral=True)
         except Exception as e:
             print(f'Error sending help message: {e}')
-            await inter.response.send_message(embed=errors.create_error_embed(f"Error sending help command: {e}"))
+            await inter.response.send_message(embed=errors.create_error_embed(f"{e}"))
 
 def setup(bot):
     bot.add_cog(help(bot))

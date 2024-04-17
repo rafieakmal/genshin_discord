@@ -40,6 +40,8 @@ bot = commands.Bot(
 
 @bot.command()
 async def whitelistadd(ctx, channel: disnake.TextChannel):
+    if not ctx.guild:  # Ensure command is used in a guild
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -71,6 +73,8 @@ async def whitelistadd(ctx, channel: disnake.TextChannel):
 
 @bot.command()
 async def staffadd(ctx, member: disnake.Member):
+    if not ctx.guild:  # Ensure command is used in a guild
+        return await ctx.send("This command can only be used in a server.")
     try:
         if ctx.author.id in config.owner_ids:
             # get the channel id from mongodb
@@ -101,6 +105,8 @@ async def staffadd(ctx, member: disnake.Member):
 
 @bot.command()
 async def staffdel(ctx, member: disnake.Member):
+    if not ctx.guild:  # Ensure command is used in a guild
+        return await ctx.send("This command can only be used in a server.")
     try:
         if ctx.author.id in config.owner_ids:
             # check if the user is a staff member
@@ -128,6 +134,8 @@ async def staffdel(ctx, member: disnake.Member):
 
 @bot.command()
 async def denylistadd(ctx, channel: disnake.TextChannel):
+    if not ctx.guild:  # Ensure command is used in a guild
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -157,6 +165,8 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
 
 @bot.command()
 async def whitelistdel(ctx, channel: disnake.TextChannel):
+    if not ctx.guild:  # Ensure command is used in a guild
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -187,6 +197,8 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
 
 @bot.command()
 async def denylistdel(ctx, channel: disnake.TextChannel):
+    if not ctx.guild:  # Ensure command is used in a guild
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -238,6 +250,8 @@ async def restrictmode(ctx, status: str):
 
 @bot.command()
 async def update(ctx):
+    if not ctx.guild:  # Check if the command is used in a server
+        return await ctx.send("This command can only be used in a server.")
     try:
         if ctx.author.id in config.owner_ids:
             if platform.system() == "Windows":
@@ -275,6 +289,8 @@ async def update(ctx):
 
 @bot.command()
 async def getwhitelist(ctx):
+    if not ctx.guild:  # Check if the command is used in a server
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -305,6 +321,8 @@ async def getwhitelist(ctx):
 
 @bot.command()
 async def getclaimedusers(ctx):
+    if not ctx.guild:  # Check if the command is used in a server
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -336,6 +354,8 @@ async def getclaimedusers(ctx):
 
 @bot.command()
 async def getabyssmaster(ctx):
+    if not ctx.guild:  # Check if the command is used in a server
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -373,6 +393,8 @@ async def getabyssmaster(ctx):
 
 @bot.command()
 async def resetabyssdata(ctx, uid = None):
+    if not ctx.guild:  # Check if the command is used in a server
+        return await ctx.send("This command can only be used in a server.")
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -402,12 +424,14 @@ async def resetabyssdata(ctx, uid = None):
                 await client_db.delete_many('users_claimed', {'server_id': ctx.guild.id})
                 return await ctx.send("Deleted all Abyss Master roles")
     except Exception as e:
-        (f'Error sending help message: {e}')
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
         
 
 @bot.command()
 async def resetabyssrole(ctx, member: disnake.Member):
+    if not ctx.guild:  # Check if the command is used in a server
+        return await ctx.send("This command can only be used in a server.")
+    
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -448,91 +472,76 @@ async def resetabyssrole(ctx, member: disnake.Member):
 @bot.command()
 async def getexploration(ctx, uid):
     try:
-            if uid == None or uid == "":
-                return await ctx.send("Please provide a user id")
-                    
-            # check uid length must be between 9 and 10
-            if len(uid) < 9 or len(uid) > 10:
-                return await ctx.send("Please provide a valid user id")
-                
-                # check if uid is a number
-            if not uid.isdigit():
-                return await ctx.send("Please provide a valid user id")
+        # Check if the command is used in a whitelisted channel or DMs
+        channel_id = ctx.channel.id if ctx.channel else ctx.author.id
+        whitelisted = await client_db.find_one("whitelists", {"channel_id": channel_id})
+        if not whitelisted:
+            return await ctx.send("This command is disabled in this channel or DM")
 
+        if not uid or not uid.isdigit() or not (9 <= len(uid) <= 10):
+            return await ctx.send("Please provide a valid user id")
+
+        user_logged_in = await client_db.find_one('users', {'user_id': ctx.author.id})
+        if not user_logged_in:
             cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
-            client = genshin.Client(cookies)
-                    
-            data_profile = await client.get_genshin_user(uid)
-
-            data_exploration = []
-
-            for exploration in data_profile.explorations:
-                if exploration.name == "Chenyu Vale":
-                    continue
-
-                data_exploration.append({
-                    "name": exploration.name,
-                    "level": exploration.level,
-                    "exploration_percentage": round((int(exploration.raw_explored) / 1000) * 100, 1),
-                    "icon": exploration.icon
-                })
-
-            all_data_are_100 = all(exploration['exploration_percentage'] == 100 for exploration in data_exploration)
-
-            message_100 = ""
-            if all_data_are_100:
-                message_100 += "> Congratulations! All explorations are 100% completed!"
-            else:
-                all_data_are_not_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
-
-                message_100 += "> Explorations that are not 100% completed:"
-                for exploration in all_data_are_not_100:
-                    message_100 += f"\n> - {exploration}"
-                
-                message_data_100 = "> Explorations that are 100% completed:"
-                data_that_are_100 = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] == 100]
-                for exploration in data_that_are_100:
-                    message_data_100 += f"\n> - {exploration}"
-                
-
-            data_emoji_progress = {
-                "start_blank": 1225706893960282184,
-                "start_full": 1225706895915094067,
-                "mid_blank": 1225706884611444787,
-                "mid_full": 1225706891196502047,
-                "back_blank": 1225706887366971443,
-                "back_full": 1225706888939962399
-            }
-
-            author = ctx.author
-            embed = disnake.Embed(title=f"{author.name}'s Exploration Progress", color=config.Success(), timestamp=datetime.datetime.now())
-
-            for exploration in data_exploration:
-                message = ""
-
-                if exploration['exploration_percentage'] == 100:
-                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_full:{data_emoji_progress['back_full']}>"
-                elif exploration['exploration_percentage'] >= 60 and exploration['exploration_percentage'] < 100:
-                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_full:{data_emoji_progress['mid_full']}><:back_blank:{data_emoji_progress['back_blank']}>"
-                elif exploration['exploration_percentage'] >= 30 and exploration['exploration_percentage'] < 60:
-                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_full:{data_emoji_progress['mid_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
-                elif exploration['exploration_percentage'] >= 10 and exploration['exploration_percentage'] < 30:
-                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_full:{data_emoji_progress['start_full']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
-                else:
-                    message += f"\n> Progress: {exploration['exploration_percentage']}%\n> <:start_blank:{data_emoji_progress['start_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:mid_blank:{data_emoji_progress['mid_blank']}><:back_blank:{data_emoji_progress['back_blank']}>"
-
-                embed.add_field(name=f"<:block_star:1225801267893370961> {exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}", value=message, inline=False)
+        else:
+            # Set up Genshin client with user's cookies
+            cookies = {key: user_logged_in[key] for key in [
+            'ltuid_v2', 'ltoken_v2', 'cookie_token_v2', 'account_id_v2', 'account_mid_v2', 'ltmid_v2']}
             
-            embed.add_field(name="<:block_star:1225801267893370961> Note:", value=message_100, inline=False)
-            embed.add_field(name="<:block_star:1225801267893370961> Extra Note:", value=message_data_100, inline=False)
-            embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
-            embed.set_image(
-                url=config.banner_exploration
+        client = genshin.Client(cookies)
+        data_profile = await client.get_genshin_user(uid)
+
+        data_exploration = [
+            {
+                "name": exploration.name,
+                "level": exploration.level,
+                "exploration_percentage": round((int(exploration.raw_explored) / 1000) * 100, 1),
+                               "icon": exploration.icon
+            } for exploration in data_profile.explorations if exploration.name != "Chenyu Vale"
+        ]
+
+        all_data_are_100 = all(exploration['exploration_percentage'] == 100 for exploration in data_exploration)
+        message_100 = "> Congratulations! All explorations are 100% completed!" if all_data_are_100 else ""
+
+        incomplete_explorations = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
+        message_100 += "\n> Explorations that are not 100% completed:\n" + "\n".join([f"> - {name}" for name in incomplete_explorations])
+
+        complete_explorations = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] == 100]
+        message_data_100 = "\n> Explorations that are 100% completed:\n" + "\n".join([f"> - {name}" for name in complete_explorations])
+
+        data_emoji_progress = config.data_emoji_progress  # Assuming this is defined in the config file for better maintainability
+
+        embed = disnake.Embed(title=f"{ctx.author.name}'s Exploration Progress", color=config.Success(), timestamp=datetime.datetime.now())
+        for exploration in data_exploration:
+            progress_emoji = get_progress_emoji(exploration['exploration_percentage'], data_emoji_progress)
+            embed.add_field(
+                name=f"{config.block_star_emoji} {exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}",
+                value=f"\n> Progress: {exploration['exploration_percentage']}%\n> {progress_emoji}",
+                inline=False
             )
 
-            await ctx.send(embed=embed)
+        embed.add_field(name=f"{config.block_star_emoji} Note", value=message_100, inline=False)
+        embed.add_field(name=f"{config.block_star_emoji} Extra Note", value=message_data_100, inline=False)
+        embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
+        embed.set_image(url=config.banner_exploration)
+
+        await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
+def get_progress_emoji(percentage, emoji_dict):
+    """Returns the appropriate progress bar emoji based on the exploration percentage."""
+    if percentage == 100:
+        return f"<:start_full:{emoji_dict['start_full']}>" + (f"<:mid_full:{emoji_dict['mid_full']}>" * 4) + f"<:back_full:{emoji_dict['back_full']}>"
+    elif 60 <= percentage < 100:
+        return f"<:start_full:{emoji_dict['start_full']}>" + (f"<:mid_full:{emoji_dict['mid_full']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
+    elif 30 <= percentage < 60:
+        return f"<:start_full:{emoji_dict['start_full']}><:mid_full:{emoji_dict['mid_full']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 3) + f"<:back_blank:{emoji_dict['back_blank']}>"
+    elif 10 <= percentage < 30:
+        return f"<:start_full:{emoji_dict['start_full']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
+    else:
+        return f"<:start_blank:{emoji_dict['start_blank']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
 
 @bot.command()
 async def setprefix(ctx, prefix):
@@ -614,6 +623,12 @@ async def system(ctx):
         uname = platform.uname()
         cpu_usage = psutil.cpu_percent()
         ram_usage = psutil.virtual_memory().percent
+        memory_info = psutil.Process().memory_full_info()
+        physical_memory_used = memory_info.rss / (1024 ** 2)
+        virtual_memory_used = memory_info.vms / (1024 ** 2)
+        pid = os.getpid()
+        process = psutil.Process(pid)
+        threads = process.num_threads()
 
         system_info = f"System: {uname.system}\n"
         system_info += f"Node Name: {uname.node}\n"
@@ -622,7 +637,9 @@ async def system(ctx):
         system_info += f"Machine: {uname.machine}\n"
         system_info += f"Processor: {uname.processor}\n"
         system_info += f"CPU Usage: {cpu_usage}%\n"
-        system_info += f"RAM Usage: {ram_usage}%"
+        system_info += f"RAM Usage: {ram_usage}%\n"
+        system_info += f"Using {physical_memory_used:.2f} MiB physical memory and {virtual_memory_used:.2f} MiB virtual memory.\n"
+        system_info += f"Running on PID {pid} with {threads} thread(s)."
 
         embed = disnake.Embed(
             title="System", description=f"```{system_info}```", color=config.Success())
@@ -666,170 +683,89 @@ async def reply(ctx, channel: disnake.TextChannel, message_id: str, *, message: 
             await ctx.send(embed=errors.create_error_embed(f"Error replying to message: {e}"))
 
 @bot.command()
-async def reqabyssmaster(ctx, uid):
-        try:
-            # check channel is whitelisted
-            whitelist = await client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
-            if not whitelist:
-                return
+async def reqabyssmaster(ctx, uid: str):
+    try:
+        # Check if the channel is whitelisted
+        channel_id = ctx.channel.id if ctx.channel else False
+        whitelisted = await client_db.find_one("whitelists", {"channel_id": channel_id})
+        if not whitelisted:
+            return await ctx.send("This command is disabled in this channel or DM")
 
-            # get the user info from genshin api
-            if uid == None or uid == "":
-                return await ctx.send("Please provide a user id")
-                    
-            # check uid length must be between 9 and 10
-            if len(uid) < 9 or len(uid) > 10:
-                return await ctx.send("Please provide a valid user id")
-                
-            # check if uid is a number
-            if not uid.isdigit():
-                return await ctx.send("Please provide a valid user id")
+        # Validate UID input
+        if not uid or not uid.isdigit() or not (9 <= len(uid) <= 10):
+            return await ctx.send("Please provide a valid user id")
 
-            # check if uid registered in the database
-            user = await client_db.find_one('users_claimed', {'uid': uid, 'server_id': ctx.guild.id})
-            if user:
-                return await ctx.send("This user has already claimed the Abyss Master role")
-                
-            cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
-            client = genshin.Client(cookies)
-                
-            data_abyss = await client.get_spiral_abyss(uid, previous=False)
+        # Check if the user has already claimed the Abyss Master role
+        user = await client_db.find_one('users_claimed', {'uid': uid, 'server_id': ctx.guild.id})
+        if user:
+            return await ctx.send("This user has already claimed the Abyss Master role")
 
-            # request to https://enka.network/api/uid/
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f"https://enka.network/api/uid/{uid}") as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        player = data['playerInfo']
+        # Fetch user's Spiral Abyss data
+        user_logged_in = await client_db.find_one('users', {'user_id': ctx.author.id})
 
-                        if player == None:
-                            return await ctx.send("Unable to fetch user info")
-                            
-                        if 'nickname' not in player:
-                            player['nickname'] = 'None'
-                            
-                        if 'level' not in player:
-                            player['level'] = 'None'
-                            
-                        if 'signature' not in player:
-                            player['signature'] = 'None'
-                            
-                        if 'worldLevel' not in player:
-                            player['worldLevel'] = 'None'
-                            
-                        if 'finishAchievementNum' not in player:
-                            player['finishAchievementNum'] = 'None'
-                            
-                        if 'towerFloorIndex' not in player:
-                            player['towerFloorIndex'] = 'None'
-                            
-                        if 'towerLevelIndex' not in player:
-                            player['towerLevelIndex'] = 'None'
-                            
-                        total_stars = data_abyss.total_stars
+        if not user_logged_in:
+            cookies = {"ltuid_v2": config.ltuid_v2,
+                       "ltoken_v2": config.ltoken_v2}
+        else:
+            # Set up Genshin client with user's cookies
+            cookies = {key: user_logged_in[key] for key in [
+                'ltuid_v2', 'ltoken_v2', 'cookie_token_v2', 'account_id_v2', 'account_mid_v2', 'ltmid_v2']}
+            
+        client = genshin.Client(cookies)
+        data_abyss = await client.get_spiral_abyss(uid, previous=False)
 
-                        total_battles = data_abyss.total_battles
+        # Fetch user's general game info
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"https://enka.network/api/uid/{uid}") as response:
+                if response.status != 200:
+                    return await ctx.send("Error: Unable to fetch user info")
 
-                        total_wins = data_abyss.total_wins
-                            
-                        message = ""
+                data = await response.json()
+                player_info = data.get('playerInfo', {})
+                nickname = player_info.get('nickname', 'None')
+                level = player_info.get('level', 'None')
+                world_level = player_info.get('worldLevel', 'None')
+                tower_floor_index = player_info.get('towerFloorIndex', 'None')
+                tower_level_index = player_info.get('towerLevelIndex', 'None')
+                total_stars = data_abyss.total_stars
 
-                        author = ctx.author
-                            
-                        # check if floor isn't 12 and chamber isn't 3
-                        if int(player['towerFloorIndex']) != 12 or int(player['towerLevelIndex']) != 3:
-                            message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
-                            message += "\n> You are not on Floor 12, Chamber 3."
-                            message += "\n> Please try again when you reach Floor 12, Chamber 3."
-                            message += "\n> Thank you and good luck!"
-                                
-                            embedVar = disnake.Embed(
-                                    title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                    colour=config.Error(),
-                                    timestamp=datetime.datetime.now())
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Statistics", value="> Fetched from Enka Network and Hoyolab", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Name", value=f"> {player['nickname'] if player['nickname'] else 'None'}", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {player['level'] if player['level'] else 'None'}", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {player['worldLevel'] if player['worldLevel'] else 'None'}", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
-                            # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
-                            embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                            embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
-                            embedVar.set_image(
-                                url=config.banner_error
-                            )
-
-                            return await ctx.send(embed=embedVar)
-                        else:
-                            if int(total_stars) == 36:
-                                message += "\n> Congratulations!"
-                                message += "\n> You have achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
-                                message += "\n> You are eligible for Abyss Master role!"
-
-                                    # give user the Abyss Master role
-                                role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
-                                if role:
-                                    try:
-                                        member = await ctx.guild.fetch_member(author.id)
-                                        await member.add_roles(role)
-                                    except Exception as e:
-                                        print(f'Error adding role to member: {e}')
-                                    
-                                    # add the user to the database
-                                    await client_db.insert_one('users_claimed', {'uid': uid, 'user_id': author.id, 'server_id': ctx.guild.id})
-
-                                    embedVar = disnake.Embed(
-                                        title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                        colour=config.Success(),
-                                        timestamp=datetime.datetime.now())
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Statistics", value="> Fetched from Enka Network and Hoyolab", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Name", value=f"> {player['nickname'] if player['nickname'] else 'None'}", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {player['level'] if player['level'] else 'None'}", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {player['worldLevel'] if player['worldLevel'] else 'None'}", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
-                                    # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
-                                    embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                                    embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
-                                    embedVar.set_image(
-                                        url=config.banner_success
-                                    )
-
-                                    return await ctx.send(embed=embedVar)
-                            else:
-                                message += "\n> Sorry, I'm unable to grant you the Abyss Master role at the moment :("
-                                message += "\n> You have not achieved 36 <:abyss_stars:1225579783660765195> in Spiral Abyss!"
-                                message += "\n> You are not eligible for Abyss Master role!"
-                                message += "\n> Please try again when you reach 36 <:abyss_stars:1225579783660765195>!"
-                                message += "\n> Thank you and good luck!"
-
-                                embedVar = disnake.Embed(
-                                    title=f"{player['nickname'] if player['nickname'] else author}'s Info",
-                                    colour=config.Error(),
-                                    timestamp=datetime.datetime.now())
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Statistics", value="> Fetched from Enka Network and Hoyolab", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Name", value=f"> {player['nickname'] if player['nickname'] else 'None'}", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {player['level'] if player['level'] else 'None'}", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {player['worldLevel'] if player['worldLevel'] else 'None'}", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> {player['towerFloorIndex'] if player['towerFloorIndex'] else 'None'}-{player['towerLevelIndex'] if player['towerLevelIndex'] else 'None'}", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Battles Fought", value=f"> {total_battles}/{total_wins}", inline=False)
-                                # embedVar.add_field(name="<:block_star:1225801267893370961> Total Retries", value=f"> {int(total_battles) - int(total_wins)}", inline=False)
-                                embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                                embedVar.set_footer(text=f"Requested by {author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
-                                embedVar.set_image(
-                                    url=config.banner_error
-                                )
-
-                                return await ctx.send(embed=embedVar)
-                    
+                # Check if the user meets the criteria for the Abyss Master role
+                if int(tower_floor_index) != 12 or int(tower_level_index) != 3 or int(total_stars) < 36:
+                    message = "> You do not meet the criteria for the Abyss Master role."
+                    embed_color = config.Error()
+                    banner_url = config.banner_error
+                else:
+                    # Grant the Abyss Master role
+                    role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
+                    if role:
+                        member = ctx.guild.get_member(ctx.author.id)
+                        await member.add_roles(role)
+                        await client_db.insert_one('users_claimed', {'uid': uid, 'user_id': ctx.author.id, 'server_id': ctx.guild.id})
+                        message = "> Congratulations! You have been granted the Abyss Master role."
+                        embed_color = config.Success()
+                        banner_url = config.banner_success
                     else:
-                        return await ctx.send("Error: Unable to fetch user info")
-        except Exception as e:
-            return await ctx.send(embed=errors.create_error_embed(f"{e}"))
+                        message = "> Abyss Master role not found."
+                        embed_color = config.Error()
+                        banner_url = config.banner_error
+
+                # Construct and send the response embed
+                embedVar = disnake.Embed(
+                    title=f"{nickname}'s Abyss Info",
+                    colour=embed_color,
+                    timestamp=datetime.datetime.now())
+                embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {level}", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {world_level}", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> Floor {tower_floor_index} - Chamber {tower_level_index}", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
+                embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
+                embedVar.set_image(url=banner_url)
+
+                await ctx.send(embed=embedVar)
+
+    except Exception as e:
+        await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 # On Ready
 @bot.event

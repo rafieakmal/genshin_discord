@@ -1,88 +1,111 @@
 from disnake.ext import tasks, commands
 import time, genshin, config, disnake, datetime
 from database.database import Database
-import aiohttp, asyncio
+import asyncio
 
 # create a database object
 client_db = Database()
 
+print(datetime.datetime.now())
+
 class task_daily(commands.Cog):
     def __init__(self, bot):
-        self.index = 0
         self.bot = bot
-        self.message_id = 0
         self.daily_task.start()
 
     def cog_unload(self):
         self.daily_task.cancel()
 
-    
-    @tasks.loop(seconds=1.0)
+    @tasks.loop(time=datetime.time(hour=23, minute=0, second=0, tzinfo=datetime.timezone(datetime.timedelta(hours=7))))
     async def daily_task(self):
-        # get the current time with timezones
-        now = time.time()
-        
-        # format the time
-        current_time = time.strftime('%H:%M:%S', time.localtime(now))
+        """
+        Run the daily task
+        """
+        users = await client_db.find('users', {})
+        if not users:
+            return
 
-        # get current date
-        date = time.strftime('%d/%m/%Y', time.localtime(now))
-        day = time.strftime('%A', time.localtime(now))
-        month = time.strftime('%B', time.localtime(now))
-        year = time.strftime('%Y', time.localtime(now))
-        day_raw = time.strftime('%d', time.localtime(now))
-        month_raw = time.strftime('%m', time.localtime(now))
-        year_raw = time.strftime('%Y', time.localtime(now))
+        for user in users:
+            cookies = self.get_user_cookies(user=user)
 
-        if current_time == '23:01:00':
-            # get all users token
-            users = await client_db.find('users', {})
-            if users:
-                for user in users:
-                    cookies = {
-                        "ltuid_v2": user['ltuid'],
-                        "ltoken_v2": user['ltoken'],
-                        "cookie_token_v2": user['cookie_token'],
-                        "account_id_v2": user['account_id'],
-                        "account_mid_v2": user['account_mid'],
-                        "ltmid_v2": user['ltmid'],
-                    }
+            client = self.get_genshin_client(cookies=cookies, debug=True)
+            client.default_game = genshin.Game.GENSHIN
 
-                    # get the client
-                    client = genshin.Client(debug=True)
-                    client.set_cookies(cookies)
-                    client.default_game = genshin.Game.GENSHIN
+            try:
+                signed_in, _ = await client.get_reward_info()
+                if not signed_in:
+                    reward = await client.claim_daily_reward()
+                    await self.notify_user_reward_claimed(user=user, reward=reward)
+            except genshin.InvalidCookies:
+                await self.notify_invalid_cookies(user=user)
+            except genshin.GeetestTriggered:
+                print("Geetest triggered on daily reward.")
+            except genshin.AlreadyClaimed:
+                await self.notify_user_already_claimed(user=user)
 
-                     # get the daily check-in
-                    signed_in, claimed_rewards = await client.get_reward_info()
-                    if signed_in:
-                        pass
+    
 
-                    try:
-                        reward = await client.claim_daily_reward()
-                    except genshin.InvalidCookies:
-                        print("Invalid cookies.")
-                    except genshin.GeetestTriggered:
-                        print("Geetest triggered on daily reward.")
-                    except genshin.AlreadyClaimed:
-                        await self.bot.get_user(user['user_id']).send("You have already claimed your daily reward!")
-                    else:
-                        embedVar = disnake.Embed(
-                            title="Your daily reward has been claimed!",
-                            colour=config.Success(),
-                            timestamp=datetime.datetime.now()
-                        )
-                        embedVar.add_field(
-                            name="<:block_star:1225801267893370961> Reward", value=f"> {reward.name}", inline=True)
-                        embedVar.add_field(
-                            name="<:block_star:1225801267893370961> Amount", value=f"> {reward.amount}x", inline=True)
-                        embedVar.set_footer(
-                            text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
-                        embedVar.set_thumbnail(
-                            url=reward.icon
-                        )
+    async def notify_user_reward_claimed(self, **kwargs):
+        """
+        Notify the user that the daily reward has been claimed
+        """
+        embedVar = disnake.Embed(
+            title="Your daily reward has been claimed!",
+            colour=config.Success(),
+            timestamp=datetime.datetime.now()
+        )
+        embedVar.add_field(name="<:block_star:1225801267893370961> Reward", value=f"> {kwargs['reward'].name}", inline=True)
+        embedVar.add_field(name="<:block_star:1225801267893370961> Amount", value=f"> {kwargs['reward'].amount}x", inline=True)
+        embedVar.set_footer(text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
+        embedVar.set_thumbnail(url=kwargs['reward'].icon)
 
-                        await self.bot.get_user(user['user_id']).send(embed=embedVar)
+        return await self.bot.get_user(kwargs['user']['user_id']).send(embed=embedVar)
+
+    async def notify_invalid_cookies(self, **kwargs):
+        """
+        Notify the user that the cookies are invalid
+        """
+        await client_db.delete_one('users', {'user_id': kwargs['user']['user_id']})
+
+        embedVar = disnake.Embed(
+            title="Dear user",
+            colour=config.Error(),
+            timestamp=datetime.datetime.now()
+        )
+        embedVar.add_field(
+            name="<:block_star:1225801267893370961> Message",
+            value="> We apologize, but you have been logged out due to invalid cookies. Please log in again. We do not save any of your private information for your safety and privacy. Thank you",
+            inline=False
+        )
+        embedVar.set_footer(
+            text=f"Genshin Impact Indonesia Helper\nBot Version: {config.version}", icon_url=config.icon_url_front)
+
+        return await self.bot.get_user(kwargs['user']['user_id']).send(embed=embedVar)
+    
+    async def notify_user_already_claimed(self, **kwargs):
+        """
+        Notify the user that the daily reward has already been claimed
+        """
+        return await self.bot.get_user(kwargs['user']['user_id']).send("You have already claimed your daily reward!")
+    
+    def get_user_cookies(self, **kwargs):
+        """
+        Get the user cookies
+        """
+        return {
+            "ltuid_v2": kwargs['user']['ltuid_v2'],
+            "ltoken_v2": kwargs['user']['ltoken_v2'],
+            "cookie_token_v2": kwargs['user']['cookie_token_v2'],
+            "account_id_v2": kwargs['user']['account_id_v2'],
+            "account_mid_v2": kwargs['user']['account_mid_v2'],
+            "ltmid_v2": kwargs['user']['ltmid_v2'],
+        }
+
+    def get_genshin_client(self, **kwargs):
+        """
+        Get the genshin client
+        """
+        return genshin.Client(**kwargs)
 
     @daily_task.before_loop
     async def before_printer_rewards(self):
