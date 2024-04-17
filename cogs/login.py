@@ -1,10 +1,7 @@
 # Importing the required modules
 import disnake
-from disnake.ext import commands, tasks
+from disnake.ext import commands
 import os
-import psutil 
-import requests
-import json
 import aiohttp
 import config
 from helpers import errors
@@ -19,8 +16,8 @@ from disnake import TextInputStyle
 # Connecting to the database
 client_db = Database()
 
-def restart_program():
-    print("Restarting the program...")
+async def restart_program():
+    print("Restarting the program asynchronously...")
     last_python = sys.executable
     os.execl(last_python, last_python, *sys.argv)
 
@@ -50,43 +47,21 @@ class LoginModal(disnake.ui.Modal):
         try:
             author = inter.author
             await inter.response.send_message("Logging in...", ephemeral=True)
-            last_message_id = await inter.original_response()
 
-            embed = disnake.Embed(title="HoYoLAB Login", color=0x00FF00)
-            email = ""
-            password = ""
+            email = inter.text_values["email"]
+            password = inter.text_values["password"]
 
-            for key, value in inter.text_values.items():
-                embed.add_field(
-                    name=key.capitalize(),
-                    value=value[:1024],
-                    inline=False,
-                )
-                if key == "email":
-                    email += value
-                elif key == "password":
-                    password += value
-
+            client = genshin.Client()
+            port_randomize = random.randint(5000, 9000)
             try:
-                client = genshin.Client()
-                port_randomize = random.randint(5000, 9000)
                 cookies = await client.login_with_password(email, password, port=port_randomize)
                 if cookies:
-                    os.system(f'netstat -ano | findstr :{port_randomize} | findstr /B 0.0.0.0')
-                    # Save the cookies to the database
                     data = {
                         "user_id": author.id,
                         "user_name": author.name,
-                        "ltuid": cookies["ltuid_v2"],
-                        "ltoken": cookies["ltoken_v2"],
-                        "cookie_token": cookies["cookie_token_v2"],
-                        "account_id": cookies["account_id_v2"],
-                        "account_mid": cookies["account_mid_v2"],
-                        "ltmid": cookies["ltmid_v2"],
-
+                        **{key: cookies[key] for key in cookies if key.endswith("_v2")},
                     }
 
-                    # save data to database
                     await client_db.insert_one('users', data)
 
                     embedVar = disnake.Embed(
@@ -98,21 +73,19 @@ class LoginModal(disnake.ui.Modal):
 
                     await inter.followup.send(embed=embedVar, ephemeral=True)
                 else:
-                    os.system(f'netstat -ano | findstr :{port_randomize} | findstr /B 0.0.0.0')
                     await inter.followup.send(embed=errors.create_error_embed("Error Logging in to HoYoLAB"))
             except Exception as e:
-                await inter.send(embed=errors.create_error_embed(f"{e}"))
-                restart_program()
+                await inter.send(embed=errors.create_error_embed(f"Login failed: {e}"), ephemeral=True)
+                await restart_program()
         except Exception as e:
-            await inter.send(embed=errors.create_error_embed(f"{e}"))
-            restart_program()
+            await inter.send(embed=errors.create_error_embed(f"Unexpected error: {e}"), ephemeral=True)
+            await restart_program()
 
 class login(commands.Cog):
     
     def __init__(self, bot):
-    	self.bot = bot
+        self.bot = bot
 
-    # Ping Command
     @commands.slash_command(name='login', description='Login to HoYoLAB Server')
     async def login(self, inter: disnake.ApplicationCommandInteraction):
         try:
@@ -121,11 +94,12 @@ class login(commands.Cog):
             # Check if the user is already logged in
             user = await client_db.find_one('users', {'user_id': author.id})
             if user:
-                return await inter.send(embed=errors.create_error_embed("You are already logged in to HoYoLAB!"))
+                await inter.send(embed=errors.create_error_embed("You are already logged in to HoYoLAB!"), ephemeral=True)
+                return
             
             await inter.response.send_modal(LoginModal())
         except Exception as e:
-            await inter.send(embed=errors.create_error_embed(f"{e}"))
+            await inter.send(embed=errors.create_error_embed(f"Error: {e}"), ephemeral=True)
                 
 def setup(bot):
     bot.add_cog(login(bot))

@@ -43,12 +43,12 @@ class task_claim_codes(commands.Cog):
         Get the user cookies
         """
         return {
-            "ltuid_v2": kwargs['user']['ltuid'],
-            "ltoken_v2": kwargs['user']['ltoken'],
-            "cookie_token_v2": kwargs['user']['cookie_token'],
-            "account_id_v2": kwargs['user']['account_id'],
-            "account_mid_v2": kwargs['user']['account_mid'],
-            "ltmid_v2": kwargs['user']['ltmid'],
+            "ltuid_v2": kwargs['user']['ltuid_v2'],
+            "ltoken_v2": kwargs['user']['ltoken_v2'],
+            "cookie_token_v2": kwargs['user']['cookie_token_v2'],
+            "account_id_v2": kwargs['user']['account_id_v2'],
+            "account_mid_v2": kwargs['user']['account_mid_v2'],
+            "ltmid_v2": kwargs['user']['ltmid_v2'],
         }
 
     def get_genshin_client(self, **kwargs):
