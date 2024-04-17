@@ -87,7 +87,7 @@ class LoginModal(disnake.ui.Modal):
                     }
 
                     # save data to database
-                    client_db.insert_one('users', data)
+                    await client_db.insert_one('users', data)
 
                     embedVar = disnake.Embed(
                         title="HoYoLAB Login",
@@ -119,7 +119,7 @@ class login(commands.Cog):
             author = inter.author
 
             # Check if the user is already logged in
-            user = client_db.find_one('users', {'user_id': author.id})
+            user = await client_db.find_one('users', {'user_id': author.id})
             if user:
                 return await inter.send(embed=errors.create_error_embed("You are already logged in to HoYoLAB!"))
             
