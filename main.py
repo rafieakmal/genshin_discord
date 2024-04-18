@@ -658,7 +658,6 @@ async def execute(ctx, *, message: str):
         return await ctx.send("You don't have permission to use this command.")
 
     message = textwrap.indent(message, '    ')
-    message = f"async def func():\n{message}"
     env = {
         'bot': bot,
         'ctx': ctx,
