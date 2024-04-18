@@ -121,6 +121,19 @@ class general(commands.Cog):
             return f"<:start_full:{emoji_dict['start_full']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
         else:
             return f"<:start_blank:{emoji_dict['start_blank']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
+    
+    async def handle_user_not_public(self, inter: disnake.ApplicationCommandInteraction):
+        embedVar = disnake.Embed(
+            title="User's data is not public",
+            color=config.Error(),
+            timestamp=datetime.datetime.now()
+        )
+        embedVar.add_field(name="How to make your data public?",
+                        value="> Go to privacy settings -> scroll down and turn on Show my Battle Chronicle on my profile", inline=False)
+        embedVar.set_footer(
+            text=f"Requested by {inter.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
+        embedVar.set_image(url="https://i.ibb.co/1nmyXZ7/ezgif-6-1cafb9783e.gif")
+        return await inter.edit_original_response(embed=embedVar)
 
     @commands.slash_command(name='broadcast', description='Broadcast a message to a channel')
     async def broadcast(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message: str):
@@ -353,7 +366,10 @@ class general(commands.Cog):
         try:
             data_abyss = await client.get_spiral_abyss(uid, previous=False)
         except Exception as e:
-            return await inter.edit_original_response(content=f"Failed to fetch Spiral Abyss data: {e}")
+            if e.retcode == 10102:
+                return await self.handle_user_not_public(inter)
+            else:
+                return await inter.edit_original_response(content=f"Failed to fetch Spiral Abyss data: {e}")
 
         # Fetch user info from Enka Network
         async with aiohttp.ClientSession() as session:
