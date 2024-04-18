@@ -14,6 +14,9 @@ import genshin
 import datetime
 from database.database import Database
 import psutil
+import io
+import contextlib
+import textwrap
 
 from requests_and_responses.evening import *
 from requests_and_responses.greeting import *
@@ -649,38 +652,73 @@ async def system(ctx):
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
-        
+@bot.command()
+async def execute(ctx, *, message: str):
+    if ctx.author.id not in config.owner_ids:
+        return await ctx.send("You don't have permission to use this command.")
 
+    message = textwrap.indent(message, '    ')
+    message = f"async def func():\n{message}"
+    env = {
+        'bot': bot,
+        'ctx': ctx,
+        'disnake': disnake,
+        'config': config,
+        'client_db': client_db,
+        'errors': errors,
+        'platform': platform,
+        'psutil': psutil,
+        'os': os,
+    }
+
+    try:
+        # Execute the code within the restricted environment
+        exec(message, env, env) 
+        func = env['func']
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            await func()
+            output = buf.getvalue()
+
+        if output:
+            await ctx.send(f"```{output}```")
+        else:
+            await ctx.send("Executed without output.")
+    except Exception as e:
+        await ctx.send(embed=errors.create_error_embed(f"Error executing code: {e}"))
 
 
 @bot.command()
 async def say(ctx, channel: disnake.TextChannel, *, message: str):
-        try:
-            # get current staff ids in a server
-            staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
-            
-            if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-                return await ctx.send("You don't have permission to use this command")
-            await channel.send(message)
-            await ctx.send(content=f"Message sent to {channel.mention}")
-        except Exception as e:
-            await ctx.send(embed=errors.create_error_embed(f"{e}"))
+    if not ctx.guild:  # Ensure command is used in a server
+        return await ctx.send("This command can only be used in a server.")
+    try:
+        # get current staff ids in a server
+        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
+        
+        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
+            return await ctx.send("You don't have permission to use this command")
+        await channel.send(message)
+        await ctx.send(content=f"Message sent to {channel.mention}")
+    except Exception as e:
+        await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 
 @bot.command()
 async def reply(ctx, channel: disnake.TextChannel, message_id: str, *, message: str):
-        try:
-            staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
+    if not ctx.guild:  # Ensure command is used in a server
+        return await ctx.send("This command can only be used in a server.")
+    try:
+        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
-            if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-                return await ctx.send("You don't have permission to use this command")
-            message_to_reply = await channel.fetch_message(message_id)
-            if not message_to_reply:
-                return await ctx.send("Message not found.")
-            await message_to_reply.reply(message)
-            await ctx.send(content=f"Replied to the message in {channel.mention}")
-        except Exception as e:
-            await ctx.send(embed=errors.create_error_embed(f"Error replying to message: {e}"))
+        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
+            return await ctx.send("You don't have permission to use this command")
+        message_to_reply = await channel.fetch_message(message_id)
+        if not message_to_reply:
+            return await ctx.send("Message not found.")
+        await message_to_reply.reply(message)
+        await ctx.send(content=f"Replied to the message in {channel.mention}")
+    except Exception as e:
+        await ctx.send(embed=errors.create_error_embed(f"Error replying to message: {e}"))
 
 @bot.command()
 async def reqabyssmaster(ctx, uid: str):
