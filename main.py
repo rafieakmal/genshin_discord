@@ -657,7 +657,6 @@ async def execute(ctx, *, message: str):
     if ctx.author.id not in config.owner_ids:
         return await ctx.send("You don't have permission to use this command.")
 
-    message = textwrap.indent(message, '    ')
     env = {
         'bot': bot,
         'ctx': ctx,
@@ -672,18 +671,17 @@ async def execute(ctx, *, message: str):
 
     try:
         # Execute the code within the restricted environment
-        exec(message, env, env) 
-        func = env['func']
-        with io.StringIO() as buf, contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-            await func()
-            output = buf.getvalue()
+        with io.StringIO() as buf:
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                exec(message, env, env)
+                output = buf.getvalue()
 
         if output:
             await ctx.send(f"```{output}```")
         else:
             await ctx.send("Executed without output.")
     except Exception as e:
-        await ctx.send(embed=errors.create_error_embed(f"Error executing code: {e}"))
+        await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
 
 @bot.command()
