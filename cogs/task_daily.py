@@ -6,8 +6,6 @@ import asyncio
 # create a database object
 client_db = Database()
 
-print(datetime.datetime.now())
-
 class task_daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -16,7 +14,7 @@ class task_daily(commands.Cog):
     def cog_unload(self):
         self.daily_task.cancel()
 
-    @tasks.loop(time=datetime.time(hour=23, minute=0, second=0, tzinfo=datetime.timezone(datetime.timedelta(hours=7))))
+    @tasks.loop(time=datetime.time(hour=23, minute=0, second=1, tzinfo=datetime.timezone(datetime.timedelta(hours=7))))
     async def daily_task(self):
         """
         Run the daily task
