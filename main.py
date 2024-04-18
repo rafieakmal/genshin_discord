@@ -800,7 +800,23 @@ async def reqabyssmaster(ctx, uid: str):
                 await ctx.send(embed=embedVar)
 
     except Exception as e:
-        await ctx.send(embed=errors.create_error_embed(f"{e}"))
+        # handle retcode 10102 (User's data is not public)
+        if e.retcode == 10102:
+            await handle_user_not_public(ctx)
+        else:
+            await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
+async def handle_user_not_public(ctx):
+    embedVar = disnake.Embed(
+        title="User's data is not public",
+        color=config.Error(),
+        timestamp=datetime.datetime.now()
+    )
+    embedVar.add_field(name="How to make your data public?",
+                       value="> Go to privacy settings -> scroll down and turn on Show my Battle Chronicle on my profile", inline=False)
+    embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
+    embedVar.set_image(url="https://i.ibb.co/1nmyXZ7/ezgif-6-1cafb9783e.gif")
+    await ctx.send(embed=embedVar)
 
 # On Ready
 @bot.event
