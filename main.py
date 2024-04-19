@@ -41,18 +41,22 @@ bot = commands.Bot(
     owner_ids=config.owner_ids
 )
 
+async def check_staff_permissions(ctx):
+    staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
+    if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
+        embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
+        await ctx.send(embed=embed)
+        return False
+    return True
+
 @bot.command()
 async def whitelistadd(ctx, channel: disnake.TextChannel):
     if not ctx.guild:  # Ensure command is used in a guild
         return await ctx.send("This command can only be used in a server.")
     try:
-        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
+        if not await check_staff_permissions(ctx):
+            return
 
-        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-            embed = disnake.Embed(
-                title="Error", description="You are not allowed to use this command!", color=config.Error())
-            await ctx.send(embed=embed)
-            
         channel_id = await client_db.find_one(
             'whitelists', {'channel_id': channel.id})
 
@@ -140,11 +144,8 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
     if not ctx.guild:  # Ensure command is used in a guild
         return await ctx.send("This command can only be used in a server.")
     try:
-        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
-
-        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            await ctx.send(embed=embed)
+        if not await check_staff_permissions(ctx):
+            return
         
         # get the channel id from mongodb
         channel_id = await client_db.find_one(
@@ -171,12 +172,8 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
     if not ctx.guild:  # Ensure command is used in a guild
         return await ctx.send("This command can only be used in a server.")
     try:
-        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
-
-        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-            embed = disnake.Embed(
-                title="Error", description="You are not allowed to use this command!", color=config.Error())
-            await ctx.send(embed=embed)
+        if not await check_staff_permissions(ctx):
+            return
         
         # get the channel id from mongodb
         channel_id = await client_db.find_one(
@@ -203,11 +200,8 @@ async def denylistdel(ctx, channel: disnake.TextChannel):
     if not ctx.guild:  # Ensure command is used in a guild
         return await ctx.send("This command can only be used in a server.")
     try:
-        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
-
-        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
-            await ctx.send(embed=embed)
+        if not await check_staff_permissions(ctx):
+            return
 
         # get the channel id from mongodb
         channel_id = await client_db.find_one(
@@ -295,29 +289,25 @@ async def getwhitelist(ctx):
     if not ctx.guild:  # Check if the command is used in a server
         return await ctx.send("This command can only be used in a server.")
     try:
-        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
+        if not await check_staff_permissions(ctx):
+            return
 
-        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-            embed = disnake.Embed(
-                title="Error", description="You are not allowed to use this command!", color=config.Error())
+        whitelist = await client_db.find(
+            'whitelists', {'server_id': ctx.guild.id})
+        if whitelist:
+            # tag the channel
+            channels = []
+            no = 1
+            for channel in whitelist:
+                channels.append(f"{no}. <#{channel['channel_id']}>")
+                no += 1
+            embed = disnake.Embed(title="Whitelisted Channels", description="\n".join(
+                channels), color=config.Success())
             await ctx.send(embed=embed)
         else:
-            whitelist = await client_db.find(
-                'whitelists', {'server_id': ctx.guild.id})
-            if whitelist:
-                # tag the channel
-                channels = []
-                no = 1
-                for channel in whitelist:
-                    channels.append(f"{no}. <#{channel['channel_id']}>")
-                    no += 1
-                embed = disnake.Embed(title="Whitelisted Channels", description="\n".join(
-                    channels), color=config.Success())
-                await ctx.send(embed=embed)
-            else:
-                embed = disnake.Embed(
-                    title="Error", description="No channels are whitelisted!", color=config.Error())
-                await ctx.send(embed=embed)
+            embed = disnake.Embed(
+                title="Error", description="No channels are whitelisted!", color=config.Error())
+            await ctx.send(embed=embed)
     except Exception as e:
         embed = disnake.Embed(title="Error", description=f"An error occured while fetching the whitelist! {e}", color=config.Error())
         await ctx.send(embed=embed)
@@ -327,13 +317,25 @@ async def getclaimedusers(ctx):
     if not ctx.guild:  # Check if the command is used in a server
         return await ctx.send("This command can only be used in a server.")
     try:
-        staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
+        if not await check_staff_permissions(ctx):
+            return
 
-        if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-            embed = disnake.Embed(
-                title="Error", description="You are not allowed to use this command!", color=config.Error())
+        users = await client_db.find(
+            'users_claimed', {'server_id': ctx.guild.id})
+        if users:
+            # tag the user
+            user_list = []
+            no = 1
+            for user in users:
+                user_list.append(
+                    f"{no}. <@{user['user_id']}> - UID: {user['uid']}")
+                no += 1
+            embed = disnake.Embed(title="Claimed Users", description="\n".join(
+                user_list), color=config.Success())
             await ctx.send(embed=embed)
         else:
+            embed = disnake.Embed(
+                title="Error", description="No users have claimed the Abyss Master role!", color=config.Error())
             users = await client_db.find(
                 'users_claimed', {'server_id': ctx.guild.id})
             if users:
