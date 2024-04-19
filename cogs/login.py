@@ -55,7 +55,7 @@ class LoginModal(disnake.ui.Modal):
             client = genshin.Client()
             port_randomize = random.randint(5000, 9000)
             try:
-                cookies = await client.login_with_password(email, password, port=port_randomize)
+                cookies = await client.os_login_with_password(email, password, port=port_randomize)
                 if cookies:
                     password_bytes = password.encode("ascii")
                     password_encoded = base64.b64encode(password_bytes)
@@ -66,7 +66,7 @@ class LoginModal(disnake.ui.Modal):
                         "user_name": author.name,
                         "email": email,
                         "password": password_encoded,
-                        **{key: cookies[key] for key in cookies if key.endswith("_v2")},
+                        **{k: getattr(cookies, k) for k in ["cookie_token_v2", "account_mid_v2", "account_id_v2", "ltoken_v2", "ltmid_v2", "ltuid_v2"]}
                     }
 
                     await client_db.insert_one('users', data)
