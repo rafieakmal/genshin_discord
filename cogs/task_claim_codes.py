@@ -1,7 +1,7 @@
 from disnake.ext import tasks, commands
 import time, genshin, config, disnake, datetime
 from database.database import Database
-import aiohttp, asyncio
+import aiohttp, asyncio, random, base64
 
 # create a database object
 client_db = Database()
@@ -49,6 +49,19 @@ class task_claim_codes(commands.Cog):
             "account_id_v2": kwargs['user']['account_id_v2'],
             "account_mid_v2": kwargs['user']['account_mid_v2'],
             "ltmid_v2": kwargs['user']['ltmid_v2'],
+        }
+
+    def get_user_account(self, **kwargs):
+        """
+        Get the user account and decode the password
+        """
+        password_decoded_bytes = kwargs['user']['password'].encode("ascii")
+        password_decoded = base64.b64decode(password_decoded_bytes)
+        password_decoded = password_decoded.decode("ascii")
+
+        return {
+            "email": kwargs['user']['email'],
+            "password": password_decoded
         }
 
     def get_genshin_client(self, **kwargs):
@@ -106,6 +119,35 @@ class task_claim_codes(commands.Cog):
 
         await client_db.insert_one('users_claimed_code', {'user_id': kwargs['user']['user_id'], 'code': kwargs['redeem_code']})
         await self.bot.get_user(kwargs['user']['user_id']).send(embed=embedVar)
+    
+    async def refresh_invalid_cookies(self, **kwargs):
+        """
+        Refresh invalid cookies by logging in again and updating the database.
+        """
+        user_account = self.get_user_account(**kwargs)
+        email = user_account['email']
+        password = user_account['password']
+
+        try:
+            client = self.get_genshin_client()
+            port_randomize = random.randint(5000, 9000)
+            cookies = await client.login_with_password(email, password, port=port_randomize)
+            if cookies:
+                # Update the database with the new cookies
+                await client_db.update_one(
+                    'users',
+                    {'user_id': kwargs['user']['user_id']},
+                    {"$set": {key: cookies[key]
+                              for key in cookies if key.endswith("_v2")}}
+                )
+                print(
+                    f"Refreshed cookies for user {kwargs['user']['user_id']}")
+            else:
+                print(
+                    f"Failed to refresh cookies for user {kwargs['user']['user_id']}")
+        except Exception as e:
+            print(
+                f"Error refreshing cookies for user {kwargs['user']['user_id']}: {e}")
 
     async def notify_invalid_cookies(self, **kwargs):
         """
