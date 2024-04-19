@@ -91,13 +91,15 @@ class task_daily(commands.Cog):
         try:
             client = self.get_genshin_client()
             port_randomize = random.randint(5000, 9000)
-            cookies = await client.login_with_password(email, password, port=port_randomize)
+            cookies = await client.os_login_with_password(email, password, port=port_randomize)
+
             if cookies:
                 # Update the database with the new cookies
                 await client_db.update_one(
                     'users',
                     {'user_id': kwargs['user']['user_id']},
-                    {"$set": {key: cookies[key] for key in cookies if key.endswith("_v2")}}
+                    {"$set": {k: getattr(cookies, k) for k in [
+                        "cookie_token_v2", "account_mid_v2", "account_id_v2", "ltoken_v2", "ltmid_v2", "ltuid_v2"]}}
                 )
                 print(f"Refreshed cookies for user {kwargs['user']['user_id']}")
             else:
