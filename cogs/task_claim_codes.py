@@ -101,7 +101,7 @@ class task_claim_codes(commands.Cog):
         except genshin.AccountNotFound:
             await self.notify_account_not_found(user=kwargs['user'])
         except genshin.InvalidCookies:
-            await self.notify_invalid_cookies(user=kwargs['user'])
+            await self.refresh_invalid_cookies(user=kwargs['user'])
         else:
             await self.notify_user(user=kwargs['user'], redeem_code=kwargs['redeem_code'])
 
