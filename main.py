@@ -17,6 +17,7 @@ import psutil
 import io
 import contextlib
 import textwrap
+import geocoder
 
 from requests_and_responses.evening import *
 from requests_and_responses.greeting import *
@@ -635,6 +636,9 @@ async def system(ctx):
         process = psutil.Process(pid)
         threads = process.num_threads()
 
+        total_ram = psutil.virtual_memory().total / (1024 ** 3)  # Convert bytes to GB
+        used_ram = psutil.virtual_memory().used / (1024 ** 3)  # Convert bytes to GB
+        g = geocoder.ip('me')
         system_info = f"System: {uname.system}\n"
         system_info += f"Node Name: {uname.node}\n"
         system_info += f"Release: {uname.release}\n"
@@ -643,6 +647,8 @@ async def system(ctx):
         system_info += f"Processor: {uname.processor}\n"
         system_info += f"CPU Usage: {cpu_usage}%\n"
         system_info += f"RAM Usage: {ram_usage}%\n"
+        system_info += f"Total RAM: {used_ram:.2f} GB/{total_ram:.2f} GB\n"
+        system_info += f"Location: {g.country}, {g.city}\n"
         system_info += f"Using {physical_memory_used:.2f} MiB physical memory and {virtual_memory_used:.2f} MiB virtual memory.\n"
         system_info += f"Running on PID {pid} with {threads} thread(s)."
 
