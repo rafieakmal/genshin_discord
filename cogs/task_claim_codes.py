@@ -34,24 +34,24 @@ class task_claim_codes(commands.Cog):
         """
         Get the user cookies and process the redeem codes
         """
-        cookies = self.get_user_cookies(user=kwargs['user'])
-        client = self.get_genshin_client(cookies=cookies)
+        cookies = await self.get_user_cookies(user=kwargs['user'])
+        client = await self.get_genshin_client(cookies=cookies)
         await self.process_redeem_codes(user=kwargs['user'], client=client)
 
-    def get_user_cookies(self, **kwargs):
+    async def get_user_cookies(self, **account) -> dict:
         """
         Get the user cookies
         """
         return {
-            "ltuid_v2": kwargs['user']['ltuid_v2'],
-            "ltoken_v2": kwargs['user']['ltoken_v2'],
-            "cookie_token_v2": kwargs['user']['cookie_token_v2'],
-            "account_id_v2": kwargs['user']['account_id_v2'],
-            "account_mid_v2": kwargs['user']['account_mid_v2'],
-            "ltmid_v2": kwargs['user']['ltmid_v2'],
+            "ltuid_v2": account['user']['ltuid_v2'],
+            "ltoken_v2": account['user']['ltoken_v2'],
+            "cookie_token_v2": account['user']['cookie_token_v2'],
+            "account_id_v2": account['user']['account_id_v2'],
+            "account_mid_v2": account['user']['account_mid_v2'],
+            "ltmid_v2": account['user']['ltmid_v2'],
         }
 
-    def get_user_account(self, **kwargs):
+    async def get_user_account(self, **kwargs):
         """
         Get the user account and decode the password
         """
@@ -64,7 +64,7 @@ class task_claim_codes(commands.Cog):
             "password": password_decoded
         }
 
-    def get_genshin_client(self, **kwargs):
+    async def get_genshin_client(self, **kwargs):
         """
         Get the genshin client
         """
@@ -91,7 +91,7 @@ class task_claim_codes(commands.Cog):
         Attempt to redeem the code
         """
         if await client_db.find_one('users_claimed_code', {'user_id': kwargs['user']['user_id'], 'code': kwargs['redeem_code']}):
-            return
+            return   
 
         try:
             await asyncio.sleep(1)  # sleep for 1s
@@ -124,12 +124,12 @@ class task_claim_codes(commands.Cog):
         """
         Refresh invalid cookies by logging in again and updating the database.
         """
-        user_account = self.get_user_account(**kwargs)
+        user_account = await self.get_user_account(**kwargs)
         email = user_account['email']
         password = user_account['password']
 
         try:
-            client = self.get_genshin_client()
+            client = genshin.Client()
             port_randomize = random.randint(5000, 9000)
             cookies = await client.os_login_with_password(email, password, port=port_randomize)
 
@@ -147,7 +147,7 @@ class task_claim_codes(commands.Cog):
                     f"Failed to refresh cookies for user {kwargs['user']['user_id']}")
         except Exception as e:
             print(
-                f"Error refreshing cookies for user {kwargs['user']['user_id']}: {e}")
+                f"Error refreshing cookies for user in task claim codes {kwargs['user']['user_id']}: {e}")
 
     async def notify_invalid_cookies(self, **kwargs):
         """

@@ -176,6 +176,47 @@ class general(commands.Cog):
         except Exception as e:
             # Handle any exceptions and send an error message
             await inter.edit_original_response(embed=errors.create_error_embed(f"{e}"))
+
+    @commands.slash_command(name='archon_quests', description='Retrieve Genshin Impact archon quests')
+    async def archon_quests(self, inter: disnake.ApplicationCommandInteraction):
+        """
+        Retrieves the latest Genshin Impact archon quests from the official source.
+
+        Parameters:
+        - inter: The interaction context.
+        """
+        await inter.response.defer()
+        try:
+            # 
+            user = await client_db.find_one('users', {'user_id': inter.author.id})
+            if not user:
+                await inter.edit_original_response(content="User not found.")
+                return
+
+            # Construct cookies from user data
+            cookies = {key: user[key] for key in ['ltuid_v2', 'ltoken_v2', 'cookie_token_v2', 'account_id_v2', 'account_mid_v2', 'ltmid_v2']}
+
+            # Initialize the client with cookies
+            client = genshin.Client()
+            client.set_cookies(cookies)
+
+            # Attempt to claim the daily reward
+            try:
+                notes = await client.get_genshin_notes()
+                archon_quests = notes.archon_quest_progress
+                if archon_quests.list:
+                    archon_quests_list = [
+                        f"> {quest.name} - {quest.level} - {quest.progress} / {quest.total}"
+                        for quest in archon_quests.list
+                    ]
+                else:
+                    archon_quests_list = f""
+                await inter.edit_original_response(content="\n".join(archon_quests_list))
+            except (genshin.InvalidCookies, genshin.GeetestTriggered) as e:
+                await inter.edit_original_response(content=f"Failed to claim daily reward: {e}")
+                return
+        except Exception as e:
+            await inter.edit_original_response(embed=errors.create_error_embed(f"Failed to retrieve Genshin notes: {e}"))
     
     @commands.slash_command(name='say', description='Say a message to a channel')
     async def say(self, inter: disnake.ApplicationCommandInteraction, channel: disnake.TextChannel, message: str):
