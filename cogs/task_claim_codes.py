@@ -12,6 +12,8 @@ class task_claim_codes(commands.Cog):
         Initialize the task
         """
         self.bot = bot
+        if self.claim_codes.is_running():
+            self.claim_codes.cancel()
         self.claim_codes.start()
 
     def cog_unload(self):
@@ -79,12 +81,15 @@ class task_claim_codes(commands.Cog):
         """
         redeem_codes = await client_db.find('redeem_codes', {})
         if redeem_codes:
-            all_claimed_codes_set = set(claimed_code['code'] for claimed_code in await client_db.find('users_claimed_code', {'user_id': kwargs['user']['user_id']}))
-            filtered_redeem_codes = [redeem_code['code'] for redeem_code in redeem_codes if redeem_code['code'] not in all_claimed_codes_set]
+            try:
+                all_claimed_codes_set = set(claimed_code['code'] for claimed_code in await client_db.find('users_claimed_code', {'user_id': kwargs['user']['user_id']}))
+                filtered_redeem_codes = [redeem_code['code'] for redeem_code in redeem_codes if redeem_code['code'] not in all_claimed_codes_set]
 
-            if filtered_redeem_codes:
-                for redeem_code in filtered_redeem_codes:
-                    await self.attempt_redeem_code(user=kwargs['user'], client=kwargs['client'], redeem_code=redeem_code)
+                if filtered_redeem_codes:
+                    for redeem_code in filtered_redeem_codes:
+                        await self.attempt_redeem_code(user=kwargs['user'], client=kwargs['client'], redeem_code=redeem_code)
+            except Exception as e:
+                print(f"Error processing redeem codes: {e}")
 
     async def attempt_redeem_code(self, **kwargs):
         """

@@ -13,6 +13,8 @@ class TaskGetCodes(commands.Cog):
     """
     def __init__(self, bot):
         self.bot = bot
+        if self.get_codes.is_running():
+            self.get_codes.cancel()
         self.get_codes.start()  # Start the periodic task when the cog is initialized
 
     def cog_unload(self):

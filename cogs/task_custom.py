@@ -18,6 +18,8 @@ class TaskCustom(commands.Cog):
             bot: The bot instance to which this Cog will be attached.
         """
         self.bot = bot
+        if self.task_custom.is_running():
+            self.task_custom.cancel()
         self.task_custom.start()
 
     def cog_unload(self):

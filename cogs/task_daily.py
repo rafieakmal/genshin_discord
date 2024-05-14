@@ -11,6 +11,8 @@ client_db = Database()
 class task_daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        if self.daily_task.is_running():
+            self.daily_task.cancel()
         self.daily_task.start()
 
     def cog_unload(self):

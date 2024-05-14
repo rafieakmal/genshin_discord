@@ -18,6 +18,7 @@ import io
 import contextlib
 import textwrap
 import geocoder
+import cpuinfo
 
 from requests_and_responses.evening import *
 from requests_and_responses.greeting import *
@@ -627,6 +628,7 @@ async def ping(ctx):
 async def system(ctx):
     try:
         uname = platform.uname()
+        processor = cpuinfo.get_cpu_info()['brand_raw']
         cpu_usage = psutil.cpu_percent()
         ram_usage = psutil.virtual_memory().percent
         memory_info = psutil.Process().memory_full_info()
@@ -644,7 +646,7 @@ async def system(ctx):
         system_info += f"Release: {uname.release}\n"
         system_info += f"Version: {uname.version}\n"
         system_info += f"Machine: {uname.machine}\n"
-        system_info += f"Processor: {uname.processor}\n"
+        system_info += f"Processor: {processor}\n"
         system_info += f"CPU Usage: {cpu_usage}%\n"
         system_info += f"RAM Usage: {ram_usage}%\n"
         system_info += f"Total RAM: {used_ram:.2f} GB/{total_ram:.2f} GB\n"
@@ -846,32 +848,35 @@ async def on_message(message):
 
     msg = message.content.lower()
 
-    if any(msg == phrase for phrase in greeting_requests):
-        await message.channel.send(random.choice(greeting_responses))
+    try:
+        if any(msg == phrase for phrase in greeting_requests):
+            await message.channel.send(random.choice(greeting_responses))
 
-    elif any(msg == phrase for phrase in morning_requests):
-        await message.channel.send(random.choice(morning_responses))
+        elif any(msg == phrase for phrase in morning_requests):
+            await message.channel.send(random.choice(morning_responses))
 
-    elif any(msg == phrase for phrase in evening_requests):
-        await message.channel.send(random.choice(evening_responses))
+        elif any(msg == phrase for phrase in evening_requests):
+            await message.channel.send(random.choice(evening_responses))
 
-    elif any(msg == phrase for phrase in love_requests):
-        await message.channel.send(random.choice(love_responses))
+        elif any(msg == phrase for phrase in love_requests):
+            await message.channel.send(random.choice(love_responses))
 
-    elif any(msg == phrase for phrase in pervy_requests):
-        await message.channel.send(random.choice(pervy_responses))
+        elif any(msg == phrase for phrase in pervy_requests):
+            await message.channel.send(random.choice(pervy_responses))
 
-    elif any(msg == phrase for phrase in social_greeting):
-        await message.channel.send(random.choice(social_greeting_replies))
+        elif any(msg == phrase for phrase in social_greeting):
+            await message.channel.send(random.choice(social_greeting_replies))
 
-    elif any(msg == phrase for phrase in sad_requests):
-        await message.channel.send(random.choice(encouraging_responses))
+        elif any(msg == phrase for phrase in sad_requests):
+            await message.channel.send(random.choice(encouraging_responses))
 
-    elif any(msg == phrase for phrase in mean_requests):
-        await message.channel.send(random.choice(mean_responses))
+        elif any(msg == phrase for phrase in mean_requests):
+            await message.channel.send(random.choice(mean_responses))
 
-    elif any(msg == phrase for phrase in hobby_requests):
-        await message.channel.send(random.choice(hobby_responses))
+        elif any(msg == phrase for phrase in hobby_requests):
+            await message.channel.send(random.choice(hobby_responses))
+    except disnake.errors.Forbidden:
+        print("Bot does not have permission to send messages in this channel.")
     else:
         await bot.process_commands(message)
 
