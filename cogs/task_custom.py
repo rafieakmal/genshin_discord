@@ -73,9 +73,9 @@ class TaskCustom(commands.Cog):
         """
         A scheduled task that runs at 3:00 AM (UTC+7) and performs role management and notifications on specific days.
         """
-        now = datetime.datetime.now()
-        # Check if the current day is the 1st or 16th
-        if now.day in (1, 16):
+        now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
+        # Check if the current day is the 1st or 16th and the current time is exactly 3:00 AM
+        if now.day in (1, 16) and now.hour == 3 and now.minute == 0 and now.second == 0:
             guild = self.bot.get_guild(config.guild)
             role = disnake.utils.get(guild.roles, name='Abyss Master')
             channel = self.bot.get_channel(config.broadcast_channel)

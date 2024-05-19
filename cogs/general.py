@@ -20,7 +20,7 @@ class general(commands.Cog):
     
     def __init__(self, bot):
     	self.bot = bot
-
+        
     # Ping Command
     @commands.slash_command(name='ping', description='Get the bot\'s latency')
     async def ping(self, inter: disnake.ApplicationCommandInteraction):

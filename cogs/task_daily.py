@@ -23,7 +23,7 @@ class task_daily(commands.Cog):
         """
         Run the daily task
         """
-        users = await client_db.find('users', {})
+        users = await client_db.find('users', {}, callback=None)  # Added callback=None to satisfy the required argument
         if not users:
             return
 
