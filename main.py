@@ -335,8 +335,7 @@ async def getwhitelist(ctx):
                 title="Error", description="No channels are whitelisted!", color=config.Error())
             await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the whitelist! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the whitelist! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
@@ -382,8 +381,7 @@ async def getclaimedusers(ctx):
                     title="Error", description="No users have claimed the Abyss Master role!", color=config.Error())
                 await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
@@ -423,8 +421,7 @@ async def getabyssmaster(ctx):
                         title="Error", description="No users have Abyss Master role!", color=config.Error())
                     await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
