@@ -170,8 +170,7 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
             title="Success", description=f"Denylisted the channel {channel.mention}!", color=config.Success())
         await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while denylisting the channel! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while denylisting the channel! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
@@ -200,8 +199,7 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
             title="Success", description=f"Removed the channel {channel.mention} from the whitelist!", color=config.Success())
         await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while removing the channel from the whitelist! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while removing the channel from the whitelist! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
@@ -230,8 +228,7 @@ async def denylistdel(ctx, channel: disnake.TextChannel):
             title="Success", description=f"Removed the channel {channel.mention} from the blacklist!", color=config.Success())
         await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while removing the channel from the blacklist! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while removing the channel from the blacklist! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
@@ -258,8 +255,7 @@ async def restrictmode(ctx, status: str):
                 title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while changing the restrict mode! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while changing the restrict mode! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
