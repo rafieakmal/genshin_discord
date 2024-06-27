@@ -79,8 +79,7 @@ async def whitelistadd(ctx, channel: disnake.TextChannel):
             title="Success", description=f"Whitelisted the channel {channel.mention}!", color=config.Success())
         await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while whitelisting the user! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while whitelisting the user! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
