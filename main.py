@@ -931,12 +931,12 @@ async def on_message(message):
 async def status_task():
     await bot.change_presence(activity=disnake.Game(random.choice(config.activity)))
 
+bot.load_extension('jishaku')
+
 # Load Cogs On Start
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
-
-bot.load_extension('jishaku')
 
 # Run The Bot
 bot.run(config.token, reconnect=True)
