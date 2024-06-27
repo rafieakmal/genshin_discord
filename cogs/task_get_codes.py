@@ -30,7 +30,7 @@ class TaskGetCodes(commands.Cog):
         Periodically fetches redeemable codes from a specified URL and stores them in a database if they are not already present.
         """
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://hoyo-codes.vercel.app/codes?game=genshin') as response:
+            async with session.get('https://hoyo-codes.seriaati.xyz/codes?game=genshin') as response:
                 if response.status == 200:
                     data = await response.json()
                     new_codes = data.get('codes', [])
