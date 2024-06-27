@@ -557,10 +557,8 @@ async def getexploration(ctx, uid):
             progress_emoji = get_progress_emoji(
                 exploration['exploration_percentage'], data_emoji_progress)
             embed.add_field(
-                name=f"{config.block_star_emoji} {
-                    exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}",
-                value=f"\n> Progress: {
-                    exploration['exploration_percentage']}%\n> {progress_emoji}",
+                name=f"{config.block_star_emoji} {exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}",
+                value=f"\n> Progress: {exploration['exploration_percentage']}%\n> {progress_emoji}",
                 inline=False
             )
 
@@ -568,8 +566,7 @@ async def getexploration(ctx, uid):
                         value=message_100, inline=False)
         embed.add_field(name=f"{config.block_star_emoji} Extra Note",
                         value=message_data_100, inline=False)
-        embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {
-                         config.version}", icon_url=config.icon_url_front)
+        embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
         embed.set_image(url=config.banner_exploration)
 
         await ctx.send(embed=embed)
@@ -599,8 +596,7 @@ async def setprefix(ctx, prefix):
             config.prefix = prefix
 
             # send the success message
-            embed = disnake.Embed(title="Success", description=f"Prefix changed to {
-                                  prefix}", color=config.Success())
+            embed = disnake.Embed(title="Success", description=f"Prefix changed to {prefix}", color=config.Success())
             await ctx.send(embed=embed)
         else:
             await ctx.send("You are not allowed to use this command!")
@@ -624,11 +620,9 @@ async def menu(ctx):
                 description="Check important commands, that you can use!",
                 colour=config.Success())
             embedVar.add_field(name="General Commands",
-                               value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{
-                                   config.prefix}getexploration uid - To get the exploration stats```\n",
+                               value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n```{config.prefix}getexploration uid - To get the exploration stats```\n",
                                inline=False)
-            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {
-                                config.version}", icon_url=config.icon_url_front)
+            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embedVar.set_image(
                 url=config.banner_success
             )
@@ -643,12 +637,8 @@ async def menu(ctx):
                 title="General Commands!",
                 description="Check important commands, that you can use!",
                 colour=config.Success())
-            embedVar.add_field(name="General Commands",
-                               value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{
-                                   config.prefix}getexploration uid - To get the exploration stats```\n",
-                               inline=False)
-            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {
-                                config.version}", icon_url=config.icon_url_front)
+            embedVar.add_field(name="General Commands", value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",inline=False)
+            embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embedVar.set_image(
                 url=config.banner_success
             )
@@ -848,20 +838,15 @@ async def reqabyssmaster(ctx, uid: str):
                 # Construct and send the response embed
                 embedVar = disnake.Embed(
                     title=f"{nickname}'s Abyss Info",
-                    colour=embed_color,
+                    color=embed_color,
                     timestamp=datetime.datetime.now())
-                embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {
-                                   level}", inline=False)
-                embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {
-                                   world_level}", inline=False)
-                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> Floor {
-                                   tower_floor_index} - Chamber {tower_level_index}", inline=False)
-                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {
-                                   total_stars} <:abyss_stars:1225579783660765195>", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {level}", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {world_level}", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> Floor {tower_floor_index} - Chamber {tower_level_index}", inline=False)
+                embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
                 embedVar.add_field(
                     name="<:block_star:1225801267893370961> Note", value=message, inline=False)
-                embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {
-                                    config.version}", icon_url=config.icon_url_front)
+                embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
                 embedVar.set_image(url=banner_url)
 
                 await ctx.send(embed=embedVar)
@@ -882,8 +867,7 @@ async def handle_user_not_public(ctx):
     )
     embedVar.add_field(name="How to make your data public?",
                        value="> Go to privacy settings -> scroll down and turn on Show my Battle Chronicle on my profile", inline=False)
-    embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {
-                        config.version}", icon_url=config.icon_url_front)
+    embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
     embedVar.set_image(url="https://i.ibb.co/1nmyXZ7/ezgif-6-1cafb9783e.gif")
     await ctx.send(embed=embedVar)
 
