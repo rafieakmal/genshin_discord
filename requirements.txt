@@ -5,4 +5,5 @@ PyNaCl
 psutil
 requests
 genshin
-genshin[cookies,rsa]
+genshin[cookies]
+rsa

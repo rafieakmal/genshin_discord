@@ -11,6 +11,8 @@ client_db = Database()
 class task_daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        if self.daily_task.is_running():
+            self.daily_task.cancel()
         self.daily_task.start()
 
     def cog_unload(self):
@@ -21,14 +23,14 @@ class task_daily(commands.Cog):
         """
         Run the daily task
         """
-        users = await client_db.find('users', {})
+        users = await client_db.find('users', {})  # Added callback=None to satisfy the required argument
         if not users:
             return
 
         for user in users:
-            cookies = self.get_user_cookies(user=user)
+            cookies = await self.get_user_cookies(user=user)
 
-            client = self.get_genshin_client(cookies=cookies, debug=True)
+            client = await self.get_genshin_client(cookies=cookies, debug=True)
             client.default_game = genshin.Game.GENSHIN
 
             try:
@@ -84,12 +86,12 @@ class task_daily(commands.Cog):
         """
         Refresh invalid cookies by logging in again and updating the database.
         """
-        user_account = self.get_user_account(**kwargs)
+        user_account = await self.get_user_account(**kwargs)
         email = user_account['email']
         password = user_account['password']
         
         try:
-            client = self.get_genshin_client()
+            client = genshin.Client()
             port_randomize = random.randint(5000, 9000)
             cookies = await client.os_login_with_password(email, password, port=port_randomize)
 
@@ -113,7 +115,7 @@ class task_daily(commands.Cog):
         """
         return await self.bot.get_user(kwargs['user']['user_id']).send("You have already claimed your daily reward!")
     
-    def get_user_cookies(self, **kwargs):
+    async def get_user_cookies(self, **kwargs):
         """
         Get the user cookies
         """
@@ -126,7 +128,7 @@ class task_daily(commands.Cog):
             "ltmid_v2": kwargs['user']['ltmid_v2'],
         }
 
-    def get_user_account(self, **kwargs):
+    async def get_user_account(self, **kwargs):
         """
         Get the user account and decode the password
         """
@@ -139,7 +141,7 @@ class task_daily(commands.Cog):
             "password": password_decoded
         }
 
-    def get_genshin_client(self, **kwargs):
+    async def get_genshin_client(self, **kwargs):
         """
         Get the genshin client
         """

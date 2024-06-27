@@ -17,6 +17,8 @@ import psutil
 import io
 import contextlib
 import textwrap
+import geocoder
+import cpuinfo
 
 from requests_and_responses.evening import *
 from requests_and_responses.greeting import *
@@ -32,7 +34,7 @@ from requests_and_responses.sad import *
 import config
 
 client_db = Database()
-        
+
 # Setting up the bot
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or(config.prefix),
@@ -41,13 +43,16 @@ bot = commands.Bot(
     owner_ids=config.owner_ids
 )
 
+
 async def check_staff_permissions(ctx):
     staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
     if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
-        embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
+        embed = disnake.Embed(
+            title="Error", description="You are not allowed to use this command!", color=config.Error())
         await ctx.send(embed=embed)
         return False
     return True
+
 
 @bot.command()
 async def whitelistadd(ctx, channel: disnake.TextChannel):
@@ -72,7 +77,7 @@ async def whitelistadd(ctx, channel: disnake.TextChannel):
             'whitelists', {'server_id': ctx.guild.id, 'channel_id': channel.id})
         embed = disnake.Embed(
             title="Success", description=f"Whitelisted the channel {channel.mention}!", color=config.Success())
-        await ctx.send(embed=embed)            
+        await ctx.send(embed=embed)
     except Exception as e:
         embed = disnake.Embed(title="Error", description=f"An error occured while whitelisting the user! {e}", color=config.Error())
         await ctx.send(embed=embed)
@@ -110,6 +115,7 @@ async def staffadd(ctx, member: disnake.Member):
             title="Error", description=f"{e}", color=config.Error())
         await ctx.send(embed=embed)
 
+
 @bot.command()
 async def staffdel(ctx, member: disnake.Member):
     if not ctx.guild:  # Ensure command is used in a guild
@@ -146,7 +152,7 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
     try:
         if not await check_staff_permissions(ctx):
             return
-        
+
         # get the channel id from mongodb
         channel_id = await client_db.find_one(
             'blacklists', {'channel_id': channel.id})
@@ -167,6 +173,7 @@ async def denylistadd(ctx, channel: disnake.TextChannel):
         embed = disnake.Embed(title="Error", description=f"An error occured while denylisting the channel! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
+
 @bot.command()
 async def whitelistdel(ctx, channel: disnake.TextChannel):
     if not ctx.guild:  # Ensure command is used in a guild
@@ -174,7 +181,7 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
     try:
         if not await check_staff_permissions(ctx):
             return
-        
+
         # get the channel id from mongodb
         channel_id = await client_db.find_one(
             'whitelists', {'channel_id': channel.id})
@@ -194,6 +201,7 @@ async def whitelistdel(ctx, channel: disnake.TextChannel):
     except Exception as e:
         embed = disnake.Embed(title="Error", description=f"An error occured while removing the channel from the whitelist! {e}", color=config.Error())
         await ctx.send(embed=embed)
+
 
 @bot.command()
 async def denylistdel(ctx, channel: disnake.TextChannel):
@@ -223,27 +231,33 @@ async def denylistdel(ctx, channel: disnake.TextChannel):
         embed = disnake.Embed(title="Error", description=f"An error occured while removing the channel from the blacklist! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
+
 @bot.command()
 async def restrictmode(ctx, status: str):
     try:
         if ctx.author.id in config.owner_ids:
             if status.lower() == "on":
                 await client_db.insert_one('restrictmode', {'server_id': ctx.guild.id, 'status': 'on'})
-                embed = disnake.Embed(title="Success", description="Restricted mode is now enabled!", color=config.Success())
+                embed = disnake.Embed(
+                    title="Success", description="Restricted mode is now enabled!", color=config.Success())
                 await ctx.send(embed=embed)
             elif status.lower() == "off":
                 await client_db.update_one('restrictmode', {'server_id': ctx.guild.id}, {'$set': {'status': 'off'}})
-                embed = disnake.Embed(title="Success", description="Restricted mode is now disabled!", color=config.Success())
+                embed = disnake.Embed(
+                    title="Success", description="Restricted mode is now disabled!", color=config.Success())
                 await ctx.send(embed=embed)
             else:
-                embed = disnake.Embed(title="Error", description="Please provide a valid status! (on/off)", color=config.Error())
+                embed = disnake.Embed(
+                    title="Error", description="Please provide a valid status! (on/off)", color=config.Error())
                 await ctx.send(embed=embed)
         else:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
+            embed = disnake.Embed(
+                title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
     except Exception as e:
         embed = disnake.Embed(title="Error", description=f"An error occured while changing the restrict mode! {e}", color=config.Error())
         await ctx.send(embed=embed)
+
 
 @bot.command()
 async def update(ctx):
@@ -253,7 +267,8 @@ async def update(ctx):
         if ctx.author.id in config.owner_ids:
             if platform.system() == "Windows":
                 try:
-                    embed = disnake.Embed(title="Updating... (Windows)", description="Updating the bot from the Github Repo...", color=config.Success())
+                    embed = disnake.Embed(
+                        title="Updating... (Windows)", description="Updating the bot from the Github Repo...", color=config.Success())
                     embed.set_footer(text=f"Requested by {ctx.author}", icon_url=config.icon_url_front)
                     await ctx.send(embed=embed)
                     subprocess.call('cls')
@@ -265,7 +280,8 @@ async def update(ctx):
 
             elif platform.system() == "Linux":
                 try:
-                    embed = disnake.Embed(title="Updating... (Linux)", description="Updating the bot from the Github Repo...", color=config.Success())
+                    embed = disnake.Embed(
+                        title="Updating... (Linux)", description="Updating the bot from the Github Repo...", color=config.Success())
                     embed.set_footer(text=f"Requested by {ctx.author}", icon_url=config.icon_url_front)
                     await ctx.send(embed=embed)
                     subprocess.call('clear')
@@ -275,14 +291,17 @@ async def update(ctx):
                 except Exception as e:
                     await ctx.send("Git failed to update the bot! Please try again later. Error: " + str(e))
             else:
-                embed = disnake.Embed(title="Error", description="Your OS is not supported!", color=config.Error())
+                embed = disnake.Embed(
+                    title="Error", description="Your OS is not supported!", color=config.Error())
                 await ctx.send(embed=embed)
         else:
-            embed = disnake.Embed(title="Error", description="You are not allowed to use this command!", color=config.Error())
+            embed = disnake.Embed(
+                title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
     except Exception as e:
         embed = disnake.Embed(title="Error", description=f"An error occured while updating the bot! {e}", color=config.Error())
         await ctx.send(embed=embed)
+
 
 @bot.command()
 async def getwhitelist(ctx):
@@ -311,6 +330,7 @@ async def getwhitelist(ctx):
     except Exception as e:
         embed = disnake.Embed(title="Error", description=f"An error occured while fetching the whitelist! {e}", color=config.Error())
         await ctx.send(embed=embed)
+
 
 @bot.command()
 async def getclaimedusers(ctx):
@@ -357,6 +377,7 @@ async def getclaimedusers(ctx):
         embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
+
 @bot.command()
 async def getabyssmaster(ctx):
     if not ctx.guild:  # Check if the command is used in a server
@@ -396,8 +417,9 @@ async def getabyssmaster(ctx):
         embed = disnake.Embed(title="Error", description=f"An error occured while fetching the claimed users! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
+
 @bot.command()
-async def resetabyssdata(ctx, uid = None):
+async def resetabyssdata(ctx, uid=None):
     if not ctx.guild:  # Check if the command is used in a server
         return await ctx.send("This command can only be used in a server.")
     try:
@@ -412,11 +434,11 @@ async def resetabyssdata(ctx, uid = None):
                 # check uid length must be between 9 and 10
                 if len(uid) < 9 or len(uid) > 10:
                     return await ctx.send("Please provide a valid user id")
-                    
+
                 # check if uid is a number
                 if not uid.isdigit():
                     return await ctx.send("Please provide a valid user id")
-                    
+
                 # check if uid registered in the database
                 user = await client_db.find_one('users_claimed', {'uid': uid})
                 if user:
@@ -430,13 +452,13 @@ async def resetabyssdata(ctx, uid = None):
                 return await ctx.send("Deleted all Abyss Master roles")
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
-        
+
 
 @bot.command()
 async def resetabyssrole(ctx, member: disnake.Member):
     if not ctx.guild:  # Check if the command is used in a server
         return await ctx.send("This command can only be used in a server.")
-    
+
     try:
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
 
@@ -451,28 +473,33 @@ async def resetabyssrole(ctx, member: disnake.Member):
                     await member.remove_roles(role)
                     return await ctx.send(f"Removed the Abyss Master role from {member.mention}")
                 else:
-                    embed = disnake.Embed(title="Error", description="Abyss Master role not found!", color=config.Error())
+                    embed = disnake.Embed(
+                        title="Error", description="Abyss Master role not found!", color=config.Error())
                     await ctx.send(embed=embed)
             else:
                 guild = ctx.guild
                 role = disnake.utils.get(guild.roles, name='Abyss Master')
 
                 if role:
-                    member_ids = [member.id for member in guild.members if member.roles and role in member.roles]
-                    
+                    member_ids = [
+                        member.id for member in guild.members if member.roles and role in member.roles]
+
                     if member_ids:
                         # reset all users with Abyss Master role
                         for member_id in member_ids:
                             member = await guild.fetch_member(member_id)
                             await member.remove_roles(role)
-                        
-                        embed = disnake.Embed(title="Success", description="Removed all Abyss Master roles", color=config.Success())
+
+                        embed = disnake.Embed(
+                            title="Success", description="Removed all Abyss Master roles", color=config.Success())
                         await ctx.send(embed=embed)
                     else:
-                        embed = disnake.Embed(title="Error", description="No users have Abyss Master role!", color=config.Error())
+                        embed = disnake.Embed(
+                            title="Error", description="No users have Abyss Master role!", color=config.Error())
                         await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
 
 @bot.command()
 async def getexploration(ctx, uid):
@@ -488,12 +515,13 @@ async def getexploration(ctx, uid):
 
         user_logged_in = await client_db.find_one('users', {'user_id': ctx.author.id})
         if not user_logged_in:
-            cookies = {"ltuid_v2": config.ltuid_v2, "ltoken_v2": config.ltoken_v2}
+            cookies = {"ltuid_v2": config.ltuid_v2,
+                       "ltoken_v2": config.ltoken_v2}
         else:
             # Set up Genshin client with user's cookies
             cookies = {key: user_logged_in[key] for key in [
-            'ltuid_v2', 'ltoken_v2', 'cookie_token_v2', 'account_id_v2', 'account_mid_v2', 'ltmid_v2']}
-            
+                'ltuid_v2', 'ltoken_v2', 'cookie_token_v2', 'account_id_v2', 'account_mid_v2', 'ltmid_v2']}
+
         client = genshin.Client(cookies)
         data_profile = await client.get_genshin_user(uid)
 
@@ -502,38 +530,49 @@ async def getexploration(ctx, uid):
                 "name": exploration.name,
                 "level": exploration.level,
                 "exploration_percentage": round((int(exploration.raw_explored) / 1000) * 100, 1),
-                               "icon": exploration.icon
+                "icon": exploration.icon
             } for exploration in data_profile.explorations if exploration.name != "Chenyu Vale"
         ]
 
-        all_data_are_100 = all(exploration['exploration_percentage'] == 100 for exploration in data_exploration)
+        all_data_are_100 = all(
+            exploration['exploration_percentage'] == 100 for exploration in data_exploration)
         message_100 = "> Congratulations! All explorations are 100% completed!" if all_data_are_100 else ""
 
-        incomplete_explorations = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] != 100]
-        message_100 += "\n> Explorations that are not 100% completed:\n" + "\n".join([f"> - {name}" for name in incomplete_explorations])
+        incomplete_explorations = [exploration['name']
+                                   for exploration in data_exploration if exploration['exploration_percentage'] != 100]
+        message_100 += "\n> Explorations that are not 100% completed:\n" + \
+            "\n".join([f"> - {name}" for name in incomplete_explorations])
 
-        complete_explorations = [exploration['name'] for exploration in data_exploration if exploration['exploration_percentage'] == 100]
-        message_data_100 = "\n> Explorations that are 100% completed:\n" + "\n".join([f"> - {name}" for name in complete_explorations])
+        complete_explorations = [exploration['name']
+                                 for exploration in data_exploration if exploration['exploration_percentage'] == 100]
+        message_data_100 = "\n> Explorations that are 100% completed:\n" + \
+            "\n".join([f"> - {name}" for name in complete_explorations])
 
-        data_emoji_progress = config.data_emoji_progress  # Assuming this is defined in the config file for better maintainability
+        # Assuming this is defined in the config file for better maintainability
+        data_emoji_progress = config.data_emoji_progress
 
-        embed = disnake.Embed(title=f"{ctx.author.name}'s Exploration Progress", color=config.Success(), timestamp=datetime.datetime.now())
+        embed = disnake.Embed(title=f"{ctx.author.name}'s Exploration Progress",
+                              color=config.Success(), timestamp=datetime.datetime.now())
         for exploration in data_exploration:
-            progress_emoji = get_progress_emoji(exploration['exploration_percentage'], data_emoji_progress)
+            progress_emoji = get_progress_emoji(
+                exploration['exploration_percentage'], data_emoji_progress)
             embed.add_field(
                 name=f"{config.block_star_emoji} {exploration['name']} - <:world_level:1225721002588114954> {exploration['level']}",
                 value=f"\n> Progress: {exploration['exploration_percentage']}%\n> {progress_emoji}",
                 inline=False
             )
 
-        embed.add_field(name=f"{config.block_star_emoji} Note", value=message_100, inline=False)
-        embed.add_field(name=f"{config.block_star_emoji} Extra Note", value=message_data_100, inline=False)
+        embed.add_field(name=f"{config.block_star_emoji} Note",
+                        value=message_100, inline=False)
+        embed.add_field(name=f"{config.block_star_emoji} Extra Note",
+                        value=message_data_100, inline=False)
         embed.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
         embed.set_image(url=config.banner_exploration)
 
         await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
 
 def get_progress_emoji(percentage, emoji_dict):
     """Returns the appropriate progress bar emoji based on the exploration percentage."""
@@ -547,6 +586,7 @@ def get_progress_emoji(percentage, emoji_dict):
         return f"<:start_full:{emoji_dict['start_full']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
     else:
         return f"<:start_blank:{emoji_dict['start_blank']}>" + (f"<:mid_blank:{emoji_dict['mid_blank']}>" * 4) + f"<:back_blank:{emoji_dict['back_blank']}>"
+
 
 @bot.command()
 async def setprefix(ctx, prefix):
@@ -563,6 +603,7 @@ async def setprefix(ctx, prefix):
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
 
+
 @bot.command()
 async def menu(ctx):
     try:
@@ -573,15 +614,14 @@ async def menu(ctx):
             whitelist = await client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
             if not whitelist:
                 return
-            
-            
+
             embedVar = disnake.Embed(
-                    title="General Commands!",
-                    description="Check important commands, that you can use!",
-                    colour=config.Success())
+                title="General Commands!",
+                description="Check important commands, that you can use!",
+                colour=config.Success())
             embedVar.add_field(name="General Commands",
-                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",
-                                            inline=False)
+                               value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master```\n```{config.prefix}getexploration uid - To get the exploration stats```\n",
+                               inline=False)
             embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embedVar.set_image(
                 url=config.banner_success
@@ -592,14 +632,12 @@ async def menu(ctx):
             whitelist = await client_db.find_one('whitelists', {'channel_id': ctx.channel.id})
             if not whitelist:
                 return
-            
+
             embedVar = disnake.Embed(
-                    title="General Commands!",
-                    description="Check important commands, that you can use!",
-                    colour=config.Success())
-            embedVar.add_field(name="General Commands",
-                value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",
-                                            inline=False)
+                title="General Commands!",
+                description="Check important commands, that you can use!",
+                colour=config.Success())
+            embedVar.add_field(name="General Commands", value=f"```{config.prefix}reqabyssmaster uid - To request role Abyss Master``````{config.prefix}getexploration uid - To get the exploration stats```\n",inline=False)
             embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
             embedVar.set_image(
                 url=config.banner_success
@@ -622,10 +660,12 @@ async def ping(ctx):
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"Error sending ping command: {e}"))
 
+
 @bot.command()
 async def system(ctx):
     try:
         uname = platform.uname()
+        processor = cpuinfo.get_cpu_info()['brand_raw']
         cpu_usage = psutil.cpu_percent()
         ram_usage = psutil.virtual_memory().percent
         memory_info = psutil.Process().memory_full_info()
@@ -635,14 +675,19 @@ async def system(ctx):
         process = psutil.Process(pid)
         threads = process.num_threads()
 
+        total_ram = psutil.virtual_memory().total / (1024 ** 3)  # Convert bytes to GB
+        used_ram = psutil.virtual_memory().used / (1024 ** 3)  # Convert bytes to GB
+        g = geocoder.ip('me')
         system_info = f"System: {uname.system}\n"
         system_info += f"Node Name: {uname.node}\n"
         system_info += f"Release: {uname.release}\n"
         system_info += f"Version: {uname.version}\n"
         system_info += f"Machine: {uname.machine}\n"
-        system_info += f"Processor: {uname.processor}\n"
+        system_info += f"Processor: {processor}\n"
         system_info += f"CPU Usage: {cpu_usage}%\n"
         system_info += f"RAM Usage: {ram_usage}%\n"
+        system_info += f"Total RAM: {used_ram:.2f} GB/{total_ram:.2f} GB\n"
+        system_info += f"Location: {g.country}, {g.city}\n"
         system_info += f"Using {physical_memory_used:.2f} MiB physical memory and {virtual_memory_used:.2f} MiB virtual memory.\n"
         system_info += f"Running on PID {pid} with {threads} thread(s)."
 
@@ -653,6 +698,7 @@ async def system(ctx):
         await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
 
 @bot.command()
 async def execute(ctx, *, message: str):
@@ -693,7 +739,7 @@ async def say(ctx, channel: disnake.TextChannel, *, message: str):
     try:
         # get current staff ids in a server
         staff_ids = await client_db.get_staffs_in_server(ctx.guild.id)
-        
+
         if ctx.author.id not in config.owner_ids and ctx.author.id not in staff_ids:
             return await ctx.send("You don't have permission to use this command")
         await channel.send(message)
@@ -718,6 +764,7 @@ async def reply(ctx, channel: disnake.TextChannel, message_id: str, *, message: 
         await ctx.send(content=f"Replied to the message in {channel.mention}")
     except Exception as e:
         await ctx.send(embed=errors.create_error_embed(f"Error replying to message: {e}"))
+
 
 @bot.command()
 async def reqabyssmaster(ctx, uid: str):
@@ -747,7 +794,7 @@ async def reqabyssmaster(ctx, uid: str):
             # Set up Genshin client with user's cookies
             cookies = {key: user_logged_in[key] for key in [
                 'ltuid_v2', 'ltoken_v2', 'cookie_token_v2', 'account_id_v2', 'account_mid_v2', 'ltmid_v2']}
-            
+
         client = genshin.Client(cookies)
         data_abyss = await client.get_spiral_abyss(uid, previous=False)
 
@@ -773,7 +820,8 @@ async def reqabyssmaster(ctx, uid: str):
                     banner_url = config.banner_error
                 else:
                     # Grant the Abyss Master role
-                    role = disnake.utils.get(ctx.guild.roles, name='Abyss Master')
+                    role = disnake.utils.get(
+                        ctx.guild.roles, name='Abyss Master')
                     if role:
                         member = ctx.guild.get_member(ctx.author.id)
                         await member.add_roles(role)
@@ -789,13 +837,14 @@ async def reqabyssmaster(ctx, uid: str):
                 # Construct and send the response embed
                 embedVar = disnake.Embed(
                     title=f"{nickname}'s Abyss Info",
-                    colour=embed_color,
+                    color=embed_color,
                     timestamp=datetime.datetime.now())
                 embedVar.add_field(name="<:block_star:1225801267893370961> Adventure Rank", value=f"> {level}", inline=False)
                 embedVar.add_field(name="<:block_star:1225801267893370961> World Level", value=f"> {world_level}", inline=False)
                 embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Progress", value=f"> Floor {tower_floor_index} - Chamber {tower_level_index}", inline=False)
                 embedVar.add_field(name="<:block_star:1225801267893370961> Abyss Stars Collected", value=f"> {total_stars} <:abyss_stars:1225579783660765195>", inline=False)
-                embedVar.add_field(name="<:block_star:1225801267893370961> Note", value=message, inline=False)
+                embedVar.add_field(
+                    name="<:block_star:1225801267893370961> Note", value=message, inline=False)
                 embedVar.set_footer(text=f"Requested by {ctx.author}\nBot Version: {config.version}", icon_url=config.icon_url_front)
                 embedVar.set_image(url=banner_url)
 
@@ -807,6 +856,7 @@ async def reqabyssmaster(ctx, uid: str):
             await handle_user_not_public(ctx)
         else:
             await ctx.send(embed=errors.create_error_embed(f"{e}"))
+
 
 async def handle_user_not_public(ctx):
     embedVar = disnake.Embed(
@@ -821,6 +871,8 @@ async def handle_user_not_public(ctx):
     await ctx.send(embed=embedVar)
 
 # On Ready
+
+
 @bot.event
 async def on_ready():
     print("The bot is ready!")
@@ -832,6 +884,7 @@ async def on_ready():
     print(f"Python version: {platform.python_version()}")
     status_task.start()
 
+
 @bot.event
 async def on_message(message):
     # Make sure the bot doesn't reply to itself
@@ -840,32 +893,35 @@ async def on_message(message):
 
     msg = message.content.lower()
 
-    if any(msg == phrase for phrase in greeting_requests):
-        await message.channel.send(random.choice(greeting_responses))
+    try:
+        if any(msg == phrase for phrase in greeting_requests):
+            await message.channel.send(random.choice(greeting_responses))
 
-    elif any(msg == phrase for phrase in morning_requests):
-        await message.channel.send(random.choice(morning_responses))
+        elif any(msg == phrase for phrase in morning_requests):
+            await message.channel.send(random.choice(morning_responses))
 
-    elif any(msg == phrase for phrase in evening_requests):
-        await message.channel.send(random.choice(evening_responses))
+        elif any(msg == phrase for phrase in evening_requests):
+            await message.channel.send(random.choice(evening_responses))
 
-    elif any(msg == phrase for phrase in love_requests):
-        await message.channel.send(random.choice(love_responses))
+        elif any(msg == phrase for phrase in love_requests):
+            await message.channel.send(random.choice(love_responses))
 
-    elif any(msg == phrase for phrase in pervy_requests):
-        await message.channel.send(random.choice(pervy_responses))
+        elif any(msg == phrase for phrase in pervy_requests):
+            await message.channel.send(random.choice(pervy_responses))
 
-    elif any(msg == phrase for phrase in social_greeting):
-        await message.channel.send(random.choice(social_greeting_replies))
+        elif any(msg == phrase for phrase in social_greeting):
+            await message.channel.send(random.choice(social_greeting_replies))
 
-    elif any(msg == phrase for phrase in sad_requests):
-        await message.channel.send(random.choice(encouraging_responses))
+        elif any(msg == phrase for phrase in sad_requests):
+            await message.channel.send(random.choice(encouraging_responses))
 
-    elif any(msg == phrase for phrase in mean_requests):
-        await message.channel.send(random.choice(mean_responses))
+        elif any(msg == phrase for phrase in mean_requests):
+            await message.channel.send(random.choice(mean_responses))
 
-    elif any(msg == phrase for phrase in hobby_requests):
-        await message.channel.send(random.choice(hobby_responses))
+        elif any(msg == phrase for phrase in hobby_requests):
+            await message.channel.send(random.choice(hobby_responses))
+    except disnake.errors.Forbidden:
+        print("Bot does not have permission to send messages in this channel.")
     else:
         await bot.process_commands(message)
 
@@ -879,6 +935,6 @@ async def status_task():
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
-    
-# Run The Bot 
+
+# Run The Bot
 bot.run(config.token, reconnect=True)
