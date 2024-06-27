@@ -299,8 +299,7 @@ async def update(ctx):
                 title="Error", description="You are not allowed to use this command!", color=config.Error())
             await ctx.send(embed=embed)
     except Exception as e:
-        embed = disnake.Embed(title="Error", description=f"An error occured while updating the bot! {
-                              e}", color=config.Error())
+        embed = disnake.Embed(title="Error", description=f"An error occured while updating the bot! {e}", color=config.Error())
         await ctx.send(embed=embed)
 
 
