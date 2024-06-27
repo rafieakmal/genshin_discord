@@ -143,7 +143,7 @@ class task_claim_codes(commands.Cog):
                 await client_db.update_one(
                     'users',
                     {'user_id': kwargs['user']['user_id']},
-                    {"$set": {k: getattr(cookies, k) for k in ["cookie_token_v2", "account_mid_v2", "account_id_v2", "ltoken_v2", "ltmid_v2", "ltuid_v2"]}}
+                    {k: getattr(cookies, k) for k in ["cookie_token_v2", "account_mid_v2", "account_id_v2", "ltoken_v2", "ltmid_v2", "ltuid_v2"]}
                 )
                 print(
                     f"Refreshed cookies for user {kwargs['user']['user_id']}")
