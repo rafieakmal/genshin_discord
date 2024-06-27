@@ -688,8 +688,7 @@ async def system(ctx):
         system_info += f"RAM Usage: {ram_usage}%\n"
         system_info += f"Total RAM: {used_ram:.2f} GB/{total_ram:.2f} GB\n"
         system_info += f"Location: {g.country}, {g.city}\n"
-        system_info += f"Using {physical_memory_used:.2f} MiB physical memory and {
-            virtual_memory_used:.2f} MiB virtual memory.\n"
+        system_info += f"Using {physical_memory_used:.2f} MiB physical memory and {virtual_memory_used:.2f} MiB virtual memory.\n"
         system_info += f"Running on PID {pid} with {threads} thread(s)."
 
         embed = disnake.Embed(
@@ -877,8 +876,7 @@ async def handle_user_not_public(ctx):
 @bot.event
 async def on_ready():
     print("The bot is ready!")
-    print(f'Logged in as {bot.user.name}#{
-          bot.user.discriminator} | {bot.user.id}')
+    print(f'Logged in as {bot.user.name}#{bot.user.discriminator} | {bot.user.id}')
     print(f"I am on {len(bot.guilds)} server")
     print(f'Running on {platform.system()} {platform.release()} ({os.name})')
     print(f'Bot Version: {config.version}')
