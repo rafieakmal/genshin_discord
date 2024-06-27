@@ -269,8 +269,7 @@ async def update(ctx):
                 try:
                     embed = disnake.Embed(
                         title="Updating... (Windows)", description="Updating the bot from the Github Repo...", color=config.Success())
-                    embed.set_footer(text=f"Requested by {
-                                     ctx.author}", icon_url=config.icon_url_front)
+                    embed.set_footer(text=f"Requested by {ctx.author}", icon_url=config.icon_url_front)
                     await ctx.send(embed=embed)
                     subprocess.call('cls')
                     subprocess.call("git pull", shell=True)
@@ -283,8 +282,7 @@ async def update(ctx):
                 try:
                     embed = disnake.Embed(
                         title="Updating... (Linux)", description="Updating the bot from the Github Repo...", color=config.Success())
-                    embed.set_footer(text=f"Requested by {
-                                     ctx.author}", icon_url=config.icon_url_front)
+                    embed.set_footer(text=f"Requested by {ctx.author}", icon_url=config.icon_url_front)
                     await ctx.send(embed=embed)
                     subprocess.call('clear')
                     subprocess.call(["git", "pull"])
