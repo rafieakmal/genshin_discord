@@ -82,7 +82,8 @@ class task_claim_codes(commands.Cog):
         redeem_codes = await client_db.find('redeem_codes', {})
         if redeem_codes:
             try:
-                all_claimed_codes_set = set(claimed_code['code'] for claimed_code in await client_db.find('users_claimed_code', {'user_id': kwargs['user']['user_id']}))
+                all_claimed_codes = [claimed_code['code'] async for claimed_code in client_db.find('users_claimed_code', {'user_id': kwargs['user']['user_id']})]
+                all_claimed_codes_set = set(all_claimed_codes)
                 filtered_redeem_codes = [redeem_code['code'] for redeem_code in redeem_codes if redeem_code['code'] not in all_claimed_codes_set]
 
                 if filtered_redeem_codes:
